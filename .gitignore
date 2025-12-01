@@ -1,3 +1,4 @@
 /.poniescript.mk
 *.build
-*main
+*puzzle1
+*puzzle2
