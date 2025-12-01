@@ -1,0 +1,6 @@
+# Save this file as .poniescript.mk, and edit the following paths:
+
+# Build directory where the poniescript_gc library will be
+PONI_GC_PATH=/path/to/poniescript/target/debug
+# Directory where poni/poni.h and friends will be findable
+PONI_H_PATH=/path/to/poniescript/poniescript
