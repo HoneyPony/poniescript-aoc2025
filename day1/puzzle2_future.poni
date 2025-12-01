@@ -1,0 +1,56 @@
+fun is_digit(char: int) -> bool {
+    char >= '0' and char <= '9'
+}
+
+// Returns: new dial, number of times we hit 0
+// Expects that change is a positive integer.
+fun count_rotations(dial: int, direction: int, change: int) -> (int, int) {
+    var zero_hits: int = 0;
+
+    while change > 0 {
+        dial = (dial + direction) % 100;
+        if dial == 0 {
+            zero_hits += 1;
+        }
+        change -= 1;
+    };
+
+    (dial, zero_hits)
+}
+
+fun init() {
+    var contents = read_file("input.txt");
+
+    // The dial. We add the numbers to it, then count the number of 0 hits.
+    var dial = 50;
+    // The number of zero hits. Possibly incremented after each turn.
+    var zero_hits = 0;
+
+    var i = 0;
+
+    while i < contents.length {
+        // First, read until we hit the next L or R.
+        while i < contents.length and contents[i] != 'L' and contents[i] != 'R' {
+            i += 1;
+        }
+        if i >= contents.length { break; }
+
+        var direction = if contents[i] == L { -1 } else { 1 };
+
+        i += 1;
+
+        var number = 0;
+        while i < contents.length and is_digit(contents[i]) {
+            number *= 10;
+            number += (contents[i] - '0');
+
+            i += 1;
+        }
+
+        var count = count_rotations(dial, direction, number);
+        dial = count.0;
+        zero_hits = zero_hits + count.1;
+    }
+
+    print("zero hits: ", zero_hits);
+}
