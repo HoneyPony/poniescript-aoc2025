@@ -51,7 +51,7 @@ fun init() {
 
     while i < contents.length {
         // First, read until we hit the next L or R.
-        while i < contents.length and ne(contents[i], L) and ne(contents[i], R) {
+        while i < contents.length and contents[i] != L and contents[i] != R {
             i = i + 1;
         }
         if i >= contents.length { break; }

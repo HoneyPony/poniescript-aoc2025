@@ -15,10 +15,6 @@ fun circular(dial: int) -> int {
     dial
 }
 
-fun ne(x: int, y: int) -> bool {
-    x < y or x > y
-}
-
 fun init() {
     var contents = read_file("input.txt");
 
@@ -35,7 +31,7 @@ fun init() {
 
     while i < contents.length {
         // First, read until we hit the next L or R.
-        while i < contents.length and ne(contents[i], L) and ne(contents[i], R) {
+        while i < contents.length and contents[i] != L and contents[i] != R {
             i = i + 1;
         }
         if i >= contents.length { break; }
