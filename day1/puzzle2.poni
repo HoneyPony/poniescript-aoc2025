@@ -1,0 +1,80 @@
+var ZERO = "0"[0];
+var NINE = "9"[0];
+
+fun is_digit(char: int) -> bool {
+    char >= ZERO and char <= NINE
+}
+
+fun circular(dial: int) -> int {
+    while dial < 0 {
+        dial = dial + 100;
+    }
+    while dial >= 100 {
+        dial = dial - 100;
+    }
+    dial
+}
+
+// Returns: new dial, number of times we hit 0
+// Expects that change is a positive integer.
+fun count_rotations(dial: int, direction: int, change: int) -> (int, int) {
+    var zero_hits: int = 0;
+
+    while change > 0 {
+        dial = circular(dial + direction);
+        if dial == 0 {
+            zero_hits = zero_hits + 1;
+        }
+        change = change - 1;
+    };
+
+    (dial, zero_hits)
+}
+
+fun ne(x: int, y: int) -> bool {
+    x < y or x > y
+}
+
+fun init() {
+    var contents = read_file("input.txt");
+
+    var L = "L"[0];
+    var R = "R"[0];
+    var nl = "\n"[0];
+
+    var i = 0;
+
+    // The dial. We add the numbers to it, then count the number of 0 hits.
+    var dial = 50;
+    // The number of zero hits. Possibly incremented after each turn.
+    var zero_hits = 0;
+
+    while i < contents.length {
+        // First, read until we hit the next L or R.
+        while i < contents.length and ne(contents[i], L) and ne(contents[i], R) {
+            i = i + 1;
+        }
+        if i >= contents.length { break; }
+
+        var direction = if contents[i] == L { 0 - 1 } else { 1 };
+
+        i = i + 1;
+
+        var number = 0;
+        while i < contents.length and is_digit(contents[i]) {
+            number = number * 10;
+            number = number + (contents[i] - ZERO);
+
+            i = i + 1;
+        }
+
+        var prev = dial;
+        var count = count_rotations(dial, direction, number);
+        dial = count.0;
+        print("dial: ", prev, " -> ", dial, " after turning ", lerp("left", "right", direction > 0), " by ", number, "; hits this rotation = ", count.1);
+
+        zero_hits = zero_hits + count.1;
+    }
+
+    print("zero hits: ", zero_hits);
+}
