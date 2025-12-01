@@ -56,7 +56,7 @@ fun init() {
         }
         if i >= contents.length { break; }
 
-        var direction = if contents[i] == L { 0 - 1 } else { 1 };
+        var direction = lerp(-1, 1, contents[i] == R);
 
         i = i + 1;
 
