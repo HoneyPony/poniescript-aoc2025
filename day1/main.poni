@@ -1,3 +1,4 @@
 fun init() {
-    
+    var contents = read_file("input.txt");
+    print(contents);
 }
