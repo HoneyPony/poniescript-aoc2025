@@ -26,13 +26,11 @@ get_split_vals(int64_t val, int64_t nudge, int64_t *num0, int64_t *num1) {
 int64_t
 nearest_smaller_power_ten(int64_t x) {
     int64_t pow = 1;
-    int64_t prev = 1;
-    while(pow < x) {
-        prev = pow;
+    while(pow <= x) {
         pow *= 10;
     }
 
-    return prev;
+    return pow;
 }
 
 int main() {

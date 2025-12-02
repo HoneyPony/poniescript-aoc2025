@@ -57,6 +57,17 @@ fun max(tup: (int, int)) -> int {
     lerp(tup.0, tup.1, tup.1 > tup.0)
 }
 
+fun nearest_smaller_power_ten(x: int) -> int {
+    var pow = 1;
+    var prev = 1;
+    while(pow <= x) {
+        prev = pow;
+        pow = pow * 10;
+    }
+
+    return pow;
+}
+
 fun init() {
     var contents = read_file("input.txt");
 
@@ -90,14 +101,7 @@ fun init() {
 
         var check = start;
         while check <= end {
-            var val = check;
-            var pow = str(check).length;
-
-            while pow > 0 {
-                val = val * 10;
-                pow = pow - 1;
-            }
-            val = val + check;
+            var val = check + check * nearest_smaller_power_ten(check);
 
             if val >= num1 and val <= num2 {
                 //print("meow: ", val);
