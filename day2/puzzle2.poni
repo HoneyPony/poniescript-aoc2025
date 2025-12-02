@@ -23,6 +23,11 @@ fun get_split_val_min(val: int, divider: int) -> int {
     var i = 0;
     var step = s.length / divider;
 
+    // Edge cases...
+    if step == 0 {
+        return 0;
+    }
+
     var result = 10000000;
 
     while i < s.length {
@@ -137,7 +142,7 @@ fun get_smallest_divider(num: int) -> int {
 }
 
 fun init() {
-    var contents = read_file("input-help.txt");
+    var contents = read_file("input.txt");
 
     var i = 0;
     var sum = 0;
@@ -164,7 +169,7 @@ fun init() {
         var count = 0;
     
         var divider = 2;
-        while divider < max_possible {
+        while divider <= max_possible {
             var start = get_split_val_min(num1, divider);
             var end = get_split_val_max(num2, divider);
 
@@ -173,7 +178,7 @@ fun init() {
                 var candidate = num_repeat(check, divider);
 
                 if candidate >= num1 and candidate <= num2 {
-                    print("got @ ", divider, ": ", candidate);
+                    //print("got @ ", divider, ": ", candidate);
                     var d = get_smallest_divider(candidate);
                     if d == divider {
                         sum = sum + candidate;
