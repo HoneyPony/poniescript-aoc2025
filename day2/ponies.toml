@@ -4,4 +4,4 @@ imports = ["../read_file.h"]
 
 [projects.puzzle2]
 files = ["puzzle2.poni"]
-imports = ["read_file.h"]
+imports = ["../read_file.h"]
