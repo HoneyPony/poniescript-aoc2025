@@ -151,7 +151,7 @@ fun do_it() {
 
         // If both numbers are the same length, don't check dividers that
         // don't work for them.
-        var do_early_exits = num1s.length == num2s.length or (num1s.length + 1 == num2s.length);
+        var do_early_exits = num1s.length == num2s.length;
 
         var max_possible = num2s.length;
 
@@ -162,9 +162,6 @@ fun do_it() {
             var actually = true;
             if do_early_exits {
                 if (num1s.length / divider) * divider != num1s.length {
-                    actually = false;
-                }
-                if (num2s.length / divider) * divider != num2s.length {
                     actually = false;
                 }
                 0;
@@ -205,9 +202,9 @@ fun do_it() {
 }
 
 fun init() {
-    var i = 0;
-    while i < 1000 {
+    //var i = 0;
+    //while i < 1000 {
         do_it();
         i = i + 1;
-    }
+    //}
 }
