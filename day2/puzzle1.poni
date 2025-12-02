@@ -20,10 +20,18 @@ fun is_sneaky(val: int) -> bool {
     true
 }
 
-fun get_split_vals(val: int) -> (int, int) {
+// For the lows, we want to *underestimate* the size. This is done by nudging
+// j forward by 1. For the highs, we want to *overeestimate*. This is done by
+// nudging j backward by 1.
+fun get_split_vals(val: int, nudge: int) -> (int, int) {
     var s = str(val);
     var i = 0;
     var j = s.length / 2;
+
+    // Way to check for even
+    if j + j != s.length {
+        j = j + nudge;
+    }
 
     var num0 = 0;
     var num1 = 0;
@@ -63,7 +71,7 @@ fun init() {
         }
         i = i + 1;
         var num2 = 0;
-        while i < contents.length and contents[i] != COMMA {
+        while i < contents.length and is_digit(contents[i]) {
             num2 = num2 * 10;
             num2 = num2 + contents[i] - ZERO;
             i = i + 1;
@@ -72,8 +80,10 @@ fun init() {
 
         print(num1, " -> ", num2);
         
-        var lows = get_split_vals(num1);
-        var highs = get_split_vals(num2);
+        var lows = get_split_vals(num1, 1);
+        var highs = get_split_vals(num2, 0);
+
+        print("lows: ", lows, " highs: ", highs);
 
         var start = min(lows);
         var end = max(highs);
@@ -82,6 +92,7 @@ fun init() {
         while check <= end {
             var val = check;
             var pow = str(check).length;
+
             while pow > 0 {
                 val = val * 10;
                 pow = pow - 1;
@@ -89,12 +100,12 @@ fun init() {
             val = val + check;
 
             if val >= num1 and val <= num2 {
-                print("meow: ", val);
+                //print("meow: ", val);
                 sum = sum + val;
             }
 
             check = check + 1;
-        }
+        };
 
         //print("lows: ", lows.0, " ", lows.1);
         //print("highs: ", highs.0, " ", highs.1);
