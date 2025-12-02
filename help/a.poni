@@ -1,0 +1,14 @@
+fun init() {
+    var x = str(1, 2, 3);
+    print(x);
+
+    var y = str(10, 20, 30);
+    print(y);
+
+    print(str(1));
+    print(str(10));
+    print(str(100));
+    print(str(1000));
+    print(str(10000));
+    print(str(300000));
+}
