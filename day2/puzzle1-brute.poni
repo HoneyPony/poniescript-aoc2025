@@ -1,0 +1,56 @@
+var ZERO = "0"[0];
+var NINE = "9"[0];
+var DASH = "-"[0];
+var COMMA = ","[0];
+
+fun is_digit(char: int) -> bool {
+    char >= ZERO and char <= NINE
+}
+
+fun is_sneaky(val: int) -> bool {
+    var s = str(val);
+    var i = 0;
+    var j = s.length / 2;
+    while j < s.length {
+        if s[i] != s[j] { return false; }
+        i = i + 1;
+        j = j + 1;
+    }
+
+    true
+}
+
+fun init() {
+    var contents = read_file("input.txt");
+
+    var i = 0;
+    var sum = 0;
+    while i < contents.length {
+        var num1 = 0;
+        while contents[i] != DASH {
+            num1 = num1 * 10;
+            num1 = num1 + contents[i] - ZERO;
+            i = i + 1;
+        }
+        i = i + 1;
+        var num2 = 0;
+        while i < contents.length and is_digit(contents[i]) {
+            num2 = num2 * 10;
+            num2 = num2 + contents[i] - ZERO;
+            i = i + 1;
+        }
+        i = i + 1;
+
+        //print(num1, " -> ", num2);
+        var check = num1;
+        while check <= num2 {
+            if is_sneaky(check) {
+                //print("sneaky: ", check);
+                sum = sum + check;
+            }
+            check = check + 1;
+        }
+    }
+
+    print("sum: ", sum);
+}

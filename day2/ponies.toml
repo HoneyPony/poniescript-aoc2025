@@ -2,6 +2,10 @@
 files = ["puzzle1.poni"]
 imports = ["../read_file.h"]
 
+[projects.puzzle1-brute]
+files = ["puzzle1-brute.poni"]
+imports = ["../read_file.h"]
+
 [projects.puzzle2]
 files = ["puzzle2.poni"]
 imports = ["../read_file.h"]
