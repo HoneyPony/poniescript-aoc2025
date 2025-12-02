@@ -55,8 +55,13 @@ fun get_split_val_min(s: StrBuf, divider: int) -> int {
     get_split_val_generic(s, divider, 0, fun(x: int, y: int) -> bool { x < y })
 }
 
-fun num_repeat(num_i: int, num: StrBuf, divider: int) -> int {
-    var pow = num.length; //str(num).length;
+fun num_repeat(num_i: int, divider: int) -> int {
+    var pow = 0;
+    var num = num_i;
+    while num > 0 {
+        num = num / 10;
+        pow = pow + 1;
+    }
     var result = num_i;
 
     // Compute shift value
@@ -155,8 +160,8 @@ fun do_it() {
 
             var check = start;
             while check <= end {
-                var check_s = str(check);
-                var candidate = num_repeat(check, check_s, divider);
+                //var check_s = str(check);
+                var candidate = num_repeat(check, divider);
 
                 if candidate >= num1 and candidate <= num2 {
                     //print("got @ ", divider, ": ", candidate);
