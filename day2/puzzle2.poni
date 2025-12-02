@@ -10,8 +10,8 @@ fun is_digit(char: int) -> bool {
 // For the lows, we want to *underestimate* the size. This is done by nudging
 // j forward by 1. For the highs, we want to *overeestimate*. This is done by
 // nudging j backward by 1.
-fun get_split_val_generic(val: int, divider: int, nudge: int, predicate: fun(int, int) -> bool) -> int {
-    var s = str(val);
+fun get_split_val_generic(s: StrBuf, divider: int, nudge: int, predicate: fun(int, int) -> bool) -> int {
+    //var s = str(val);
     var i = 0;
     var step = s.length / divider;
 
@@ -47,17 +47,17 @@ fun get_split_val_generic(val: int, divider: int, nudge: int, predicate: fun(int
     result
 }
 
-fun get_split_val_max(val: int, divider: int) -> int {
-    get_split_val_generic(val, divider, 1, fun(x: int, y: int) -> bool { x > y })
+fun get_split_val_max(s: StrBuf, divider: int) -> int {
+    get_split_val_generic(s, divider, 1, fun(x: int, y: int) -> bool { x > y })
 }
 
-fun get_split_val_min(val: int, divider: int) -> int {
-    get_split_val_generic(val, divider, 0, fun(x: int, y: int) -> bool { x < y })
+fun get_split_val_min(s: StrBuf, divider: int) -> int {
+    get_split_val_generic(s, divider, 0, fun(x: int, y: int) -> bool { x < y })
 }
 
-fun num_repeat(num: int, divider: int) -> int {
-    var pow = str(num).length;
-    var result = num;
+fun num_repeat(num_i: int, num: StrBuf, divider: int) -> int {
+    var pow = num.length; //str(num).length;
+    var result = num_i;
 
     // Compute shift value
     var shift = 1;
@@ -69,7 +69,7 @@ fun num_repeat(num: int, divider: int) -> int {
     var i = 1;
     while i < divider {
         result = result * shift;
-        result = result + num;
+        result = result + num_i;
 
         i = i + 1;
     }
@@ -102,10 +102,10 @@ fun is_number_divideable(num: StrBuf, divider: int) -> bool {
 
 /// Computes the number of repetitions that the given number can be created with,
 /// that is the smallest.
-fun get_smallest_divider(num: int) -> int {
+fun get_smallest_divider(s: StrBuf) -> int {
     var divider = 2;
 
-    var s = str(num);
+    //var s = str(num);
     while divider < s.length {
         if is_number_divideable(s, divider) {
             return divider;
@@ -143,20 +143,24 @@ fun init() {
 
         var max_possible = str(num2).length;
 
+        var num1s = str(num1);
+        var num2s = str(num2);
+
         var count = 0;
     
         var divider = 2;
         while divider <= max_possible {
-            var start = get_split_val_min(num1, divider);
-            var end = get_split_val_max(num2, divider);
+            var start = get_split_val_min(num1s, divider);
+            var end = get_split_val_max(num2s, divider);
 
             var check = start;
             while check <= end {
-                var candidate = num_repeat(check, divider);
+                var check_s = str(check);
+                var candidate = num_repeat(check, check_s, divider);
 
                 if candidate >= num1 and candidate <= num2 {
                     //print("got @ ", divider, ": ", candidate);
-                    var d = get_smallest_divider(candidate);
+                    var d = get_smallest_divider(str(candidate));
                     if d == divider {
                         sum = sum + candidate;
                         count = count + 1;
