@@ -95,8 +95,49 @@ fun num_repeat(num: int, divider: int) -> int {
     result
 }
 
+fun is_number_divideable(num: StrBuf, divider: int) -> bool {
+    var step = num.length / divider;
+    // Must evenly divide for this to work.
+    if step * divider != num.length {
+        return false;
+    }
+
+    var i = 0;
+    while i < step {
+        var check = num[i];
+        var j = 1;
+        while j < divider {
+            if num[i + j * step] != check {
+                return false;
+            }
+            j = j + 1;
+        }
+        i = i + 1;
+    }
+
+    return true;
+}
+
+/// Computes the number of repetitions that the given number can be created with,
+/// that is the smallest.
+fun get_smallest_divider(num: int) -> int {
+    var divider = 2;
+
+    var s = str(num);
+    while divider < s.length {
+        if is_number_divideable(s, divider) {
+            return divider;
+        }
+
+        divider = divider + 1;
+    };
+
+    // Should be unreachable.
+    divider
+}
+
 fun init() {
-    var contents = read_file("input.txt");
+    var contents = read_file("input-help.txt");
 
     var i = 0;
     var sum = 0;
@@ -119,6 +160,8 @@ fun init() {
         print(num1, " -> ", num2);
 
         var max_possible = str(num2).length;
+
+        var count = 0;
     
         var divider = 2;
         while divider < max_possible {
@@ -131,7 +174,12 @@ fun init() {
 
                 if candidate >= num1 and candidate <= num2 {
                     print("got @ ", divider, ": ", candidate);
-                    sum = sum + candidate;
+                    var d = get_smallest_divider(candidate);
+                    if d == divider {
+                        sum = sum + candidate;
+                        count = count + 1;
+                    }
+                    0;
                 }
 
                 check = check + 1;
@@ -140,8 +188,10 @@ fun init() {
             divider = divider + 1;
         }
 
+        print("got ", count, " candidates");
+
         // For debugging
-        if i > 40 { break; }
+        //if i > 40 { break; }
 
         //print("lows: ", lows.0, " ", lows.1);
         //print("highs: ", highs.0, " ", highs.1);
