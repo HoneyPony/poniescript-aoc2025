@@ -118,7 +118,7 @@ fun get_smallest_divider(s: StrBuf) -> int {
     divider
 }
 
-fun init() {
+fun do_it() {
     var contents = read_file("input.txt");
 
     var i = 0;
@@ -141,10 +141,10 @@ fun init() {
 
         // print(num1, " -> ", num2);
 
-        var max_possible = str(num2).length;
-
         var num1s = str(num1);
         var num2s = str(num2);
+
+        var max_possible = num2s.length;
 
         var count = 0;
     
@@ -178,4 +178,12 @@ fun init() {
     }
 
     print("sum: ", sum);
+}
+
+fun init() {
+    //var i = 0;
+    //while i < 100 {
+    do_it();
+    //    i = i + 1;
+   // }
 }
