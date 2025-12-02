@@ -149,34 +149,50 @@ fun do_it() {
         var num1s = str(num1);
         var num2s = str(num2);
 
+        // If both numbers are the same length, don't check dividers that
+        // don't work for them.
+        var do_early_exits = num1s.length == num2s.length;
+
         var max_possible = num2s.length;
 
         var count = 0;
     
         var divider = 2;
         while divider <= max_possible {
-            var start = get_split_val_min(num1s, divider);
-            var end = get_split_val_max(num2s, divider);
-
-            var check = start;
-            while check <= end {
-                //var check_s = str(check);
-                var candidate = num_repeat(check, divider);
-
-                if candidate >= num1 and candidate <= num2 {
-                    //print("got @ ", divider, ": ", candidate);
-                    var d = get_smallest_divider(str(candidate));
-                    if d == divider {
-                        sum = sum + candidate;
-                        count = count + 1;
-                    }
-                    0;
+            var actually = true;
+            if do_early_exits {
+                if (num1s.length / divider) * divider != num1s.length {
+                    actually = false;
                 }
+                0;
+            }
 
-                check = check + 1;
-            };
+            if actually {
+                var start = get_split_val_min(num1s, divider);
+                var end = get_split_val_max(num2s, divider);
 
-            divider = divider + 1;
+                var check = start;
+                while check <= end {
+                    //var check_s = str(check);
+                    var candidate = num_repeat(check, divider);
+
+                    if candidate >= num1 and candidate <= num2 {
+                        //print("got @ ", divider, ": ", candidate);
+                        var d = get_smallest_divider(str(candidate));
+                        if d == divider {
+                            sum = sum + candidate;
+                            count = count + 1;
+                        }
+                        0;
+                    }
+
+                    check = check + 1;
+                };
+
+                
+                0;
+           }
+           divider = divider + 1;
         }
 
         // print("got ", count, " candidates");
@@ -187,8 +203,8 @@ fun do_it() {
 
 fun init() {
     //var i = 0;
-    //while i < 100 {
-    do_it();
-    //    i = i + 1;
-   // }
+    //while i < 1000 {
+        do_it();
+        i = i + 1;
+    //}
 }
