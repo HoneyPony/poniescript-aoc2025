@@ -1,0 +1,159 @@
+fun is_digit(char: int) -> bool {
+    char >= '0' and char <= '9'
+}
+
+// For the lows, we want to *underestimate* the size. This is done by nudging
+// j forward by 1. For the highs, we want to *overeestimate*. This is done by
+// nudging j backward by 1.
+fun get_split_val_min(val: int, divider: int) -> int {
+    var s = str(val);
+    var i = 0;
+    var step = s.length / divider;
+
+    // Edge cases...
+    if step == 0 {
+        return 0;
+    }
+
+    var result = 10000000;
+
+    while i < s.length {
+        var next_num = 0;
+        for j in 0..step {
+            next_num = next_num * 10;
+            next_num = next_num + s[i] - '0';
+            i = i + 1;
+        }
+
+        if next_num < result {
+            result = next_num;
+        }
+    };
+
+    result
+}
+
+fun get_split_val_max(val: int, divider: int) -> int {
+    var s = str(val);
+    var i = 0;
+    var step = s.length / divider;
+
+    if step * divider != s.length {
+        // Overestimate the size of the thing to check.
+        step = step + 1;
+    }
+
+    var result = -1;
+
+    while i < s.length {
+        var next_num = 0;
+        for j in 0..step {
+            next_num = next_num * 10;
+            next_num = next_num + s[i] - '0';
+            i = i + 1;
+        }
+
+        if next_num > result {
+            result = next_num;
+        }
+    };
+
+    result
+}
+
+fun num_repeat(num: int, divider: int) -> int {
+    var exponent = str(num).length;
+    var result = num;
+
+    // Compute shift value
+    var shift = pow(10, exponent);
+
+    for i in 1..divider {
+        result = (result * shift) + num;
+    }
+
+    result
+}
+
+fun is_number_divideable(num: StrBuf, divider: int) -> bool {
+    var step = num.length / divider;
+    // Must evenly divide for this to work.
+    if step * divider != num.length {
+        return false;
+    }
+
+    for i in 0..step {
+        var check = num[i];
+        for j in 1..divider {
+            if num[i + j * step] != check {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+/// Computes the number of repetitions that the given number can be created with,
+/// that is the smallest.
+fun get_smallest_divider(num: int) -> int {
+    var s = str(num);
+    for divider in 2..s.length {
+        if is_number_divideable(s, divider) {
+            return divider;
+        }
+    };
+
+    // Should be unreachable.
+    s.length
+}
+
+fun init() {
+    var contents = read_file("input.txt");
+
+    var i = 0;
+    var sum = 0;
+    while i < contents.length {
+        var num1 = 0;
+        while contents[i] != '-' {
+            num1 = num1 * 10;
+            num1 = num1 + contents[i] - '0';
+            i = i + 1;
+        }
+        i = i + 1;
+        var num2 = 0;
+        while i < contents.length and is_digit(contents[i]) {
+            num2 = num2 * 10;
+            num2 = num2 + contents[i] - '0';
+            i = i + 1;
+        }
+        i = i + 1;
+
+        print(num1, " -> ", num2);
+
+        var max_possible = str(num2).length;
+
+        var count = 0;
+    
+        for divider in 2..=max_possible {
+            var start = get_split_val_min(num1, divider);
+            var end = get_split_val_max(num2, divider);
+
+            for check in start..=end {
+                var candidate = num_repeat(check, divider);
+
+                if candidate in num1=..=num2 {
+                    var d = get_smallest_divider(candidate);
+                    if d == divider {
+                        sum += candidate;
+                        count += 1;
+                    }
+                }
+            };
+        }
+
+        print("got ", count, " candidates");
+    }
+
+    print("sum: ", sum);
+}
