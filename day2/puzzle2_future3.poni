@@ -39,7 +39,7 @@ fun get_split_val_max(val: int, divider: int) -> int {
 }
 
 fun get_split_val_min(val: int, divider: int) -> int {
-    get_split_val_generic(val, divider, 1, fun(x: int, y: int) -> bool { x < y })
+    get_split_val_generic(val, divider, 0, fun(x: int, y: int) -> bool { x < y })
 }
 
 fun num_repeat(num: int, divider: int) -> int {
