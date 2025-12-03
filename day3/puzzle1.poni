@@ -1,0 +1,50 @@
+var ZERO = "0"[0];
+var NINE = "9"[0];
+
+fun is_digit(c: int) -> bool {
+    c >= ZERO and c <= NINE
+}
+
+fun init() {
+    var text = read_file("input.txt");
+    var i = 0;
+
+    var candidates = (0, 0);
+    var best       = (0, 0);
+    var sum        = 0;
+    while i < text.length {
+        var next = text[i];
+        if is_digit(next) {
+            candidates.1 = candidates.0;
+            candidates.0 = next - ZERO;
+
+            if candidates.1 > best.1 {
+                best.1 = candidates.1;
+                best.0 = candidates.0;
+            }
+            else {
+                if candidates.0 > best.0 {
+                    best.0 = candidates.0;
+                }
+
+                0;
+            }
+
+            0;
+        }
+        else {
+            //print("best: ", best.1, best.0);
+
+            var value = best.1 * 10 + best.0;
+            print(value);
+
+            candidates = (0, 0);
+            best       = (0, 0);
+
+            sum = sum + value;
+        }
+        i = i + 1;
+    }
+
+    print(sum);
+}
