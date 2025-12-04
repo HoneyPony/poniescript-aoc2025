@@ -1,2 +1,3 @@
 /.poniescript.mk
 *.build
+*input.txt

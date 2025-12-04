@@ -1,0 +1,4 @@
+fun init() {
+    var text = read_file("input.txt");
+    
+}
