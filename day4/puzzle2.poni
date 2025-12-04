@@ -22,11 +22,8 @@ class Grid {
     }
 
     fun clone_grid() -> Grid {
-        var bind = str(grid);
-        var width = width;
-        var height = height;
         new Grid {
-            grid: bind,
+            grid: str(grid),
             width: width,
             height: height,
         }
