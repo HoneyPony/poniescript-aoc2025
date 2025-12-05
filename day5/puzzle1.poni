@@ -1,3 +1,75 @@
-fun init() {
+var ZERO = "0"[0];
+var NINE = "9"[0];
 
+fun is_digit(c: int) -> bool {
+    c >= ZERO and c <= NINE
+}
+
+class Link {
+    // Note to self: 'range' is currently reserved, that seems bad..?
+    var item: vec2i = (0, 0);
+    var next: Link? = nil;
+
+    fun push(new_item: vec2i) {
+        next = new Link {
+            item: item,
+            next: next,
+        };
+
+        // We take over the newest item.
+        item = new_item;        
+    }
+}
+
+class LinkedList {
+    var head: Link? = nil;
+
+    fun push(item: vec2i) {
+        var old_head = head else {
+            head = new Link { item: item, next: nil };
+            return;
+        };
+        old_head.push(item);
+    }
+}
+
+fun init() {
+    var text = read_file("input.txt");
+    var i = 0;
+
+    var ranges = new LinkedList{};
+
+    loop {
+        print(text[i], is_digit(text[i]));
+        print("hello");
+        // This is the empty line if there's no digit.
+        if is_digit(text[i]) {} else { break; }
+
+        var item = (0, 0);
+
+        while is_digit(text[i]) {
+            item.0 = (item.0 * 10 + text[i] - ZERO);
+            i = i + 1;
+        }
+        // Consume the '-'
+        i = i + 1;
+        while is_digit(text[i]) {
+            item.1 = (item.1 * 10 + text[i] - ZERO);
+            i = i + 1;
+        }
+        // Consume the newline
+        i = i + 1;
+
+        // Push the range
+        ranges.push(item);
+        print("pushing item ", item)
+    }
+
+    var iter = ranges.head;
+    loop {
+        var item = iter else { break; };
+        print(item.item);
+
+        iter = item.next;
+    }
 }
