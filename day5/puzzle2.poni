@@ -5,6 +5,24 @@ fun is_digit(c: int) -> bool {
     c >= ZERO and c <= NINE
 }
 
+fun merge(a: vec2i, b: vec2i) -> (vec2i, bool) {
+    fun _merge(a: vec2i, b: vec2i) -> (vec2i, bool) {
+        if a.0 < b.0 and a.1 > b.1 {
+            return (a, true);
+        }
+        if a.0 <= b.1 + 1 and a.1 > b.1 {
+            return ((b.0, a.1), true);
+        }
+        return ((0, 0), false);
+    }
+
+    var x = _merge(a, b);
+    var y = _merge(b, a);
+    if x.1 { return x; }
+    if y.1 { return y; }
+    return ((0, 0), false);
+}
+
 class Link {
     // Note to self: 'range' is currently reserved, that seems bad..?
     var item: vec2i = (0, 0);
@@ -48,6 +66,35 @@ class LinkedList {
 
         false
     }
+
+    fun try_merge(new_val: vec2i) -> bool {
+        var iter = head;
+
+        loop {
+            var item = iter else { break; };
+            var m = merge(item.item, new_val);
+            if m.1 {
+                item.item = m.0;
+                return true;
+            }
+
+            iter = item.next;
+        }
+
+        false
+    }
+
+    fun length() -> int {
+        var result = 0;
+        var iter = head;
+        loop {
+            var item = iter else { break; };
+            result = result + 1;
+
+            iter = item.next;
+        }
+        result
+    }
 }
 
 fun init() {
@@ -78,32 +125,50 @@ fun init() {
         i = i + 1;
 
         // Push the range
-        ranges.push(item);
+        if ranges.try_merge(item) { print("merged!"); }
+        else {
+            ranges.push(item);
+            print("new range!");
+        }
         //print("pushing item ", item)
     }
 
-    // Skip the blank line
-    i = i + 1;
+    loop {
+        print("--- new iter ---");
+        var new_list = new LinkedList{};
 
+        var iter = ranges.head;
+
+        loop {
+            var item = iter else { break; };
+            
+            if new_list.try_merge(item.item) { print("merged!"); }
+            else {
+                new_list.push(item.item);
+                print("new range!");
+            }
+
+            iter = item.next;
+        }
+
+        if new_list.length() == ranges.length() {
+            ranges = new_list;
+            break;
+        }
+
+        ranges = new_list;
+    }
+
+    var iter = ranges.head;
     var sum = 0;
 
     loop {
-        if is_digit(text[i]) {} else { break; }
+        var item = iter else { break; };
         
-        var next = 0;
-        while is_digit(text[i]) {
-            next = (next * 10 + text[i] - ZERO);
-            i = i + 1;
-        }
-        // Skip the newline
-        i = i + 1;
+        sum = sum + item.item.1 - item.item.0 + 1;
 
-        // print("next = ", next);
-
-        if ranges.is_in_any_range(next) {
-            sum = sum + 1;
-        }
+        iter = item.next;
     }
 
-    print("sum = ", sum);
+    print(sum);
 }
