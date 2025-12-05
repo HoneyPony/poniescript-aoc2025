@@ -19,6 +19,10 @@ class Link {
         // We take over the newest item.
         item = new_item;        
     }
+
+    fun includes(value: int) -> bool {
+        value >= item.0 and value <= item.1
+    }
 }
 
 class LinkedList {
@@ -31,6 +35,19 @@ class LinkedList {
         };
         old_head.push(item);
     }
+
+    fun is_in_any_range(value: int) -> bool {
+        var iter = head;
+
+        loop {
+            var item = iter else { break; };
+            if item.includes(value) { return true; }
+
+            iter = item.next;
+        }
+
+        false
+    }
 }
 
 fun init() {
@@ -40,8 +57,8 @@ fun init() {
     var ranges = new LinkedList{};
 
     loop {
-        print(text[i], is_digit(text[i]));
-        print("hello");
+        //print(text[i], is_digit(text[i]));
+        //print("hello");
         // This is the empty line if there's no digit.
         if is_digit(text[i]) {} else { break; }
 
@@ -62,14 +79,31 @@ fun init() {
 
         // Push the range
         ranges.push(item);
-        print("pushing item ", item)
+        //print("pushing item ", item)
     }
 
-    var iter = ranges.head;
+    // Skip the blank line
+    i = i + 1;
+
+    var sum = 0;
+
     loop {
-        var item = iter else { break; };
-        print(item.item);
+        if is_digit(text[i]) {} else { break; }
+        
+        var next = 0;
+        while is_digit(text[i]) {
+            next = (next * 10 + text[i] - ZERO);
+            i = i + 1;
+        }
+        // Skip the newline
+        i = i + 1;
 
-        iter = item.next;
+        // print("next = ", next);
+
+        if ranges.is_in_any_range(next) {
+            sum = sum + 1;
+        }
     }
+
+    print("sum = ", sum);
 }
