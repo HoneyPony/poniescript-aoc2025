@@ -1,0 +1,146 @@
+var ZERO    = "0"[0];
+var NINE    = "9"[0];
+var SPACE   = " "[0];
+var NEWLINE = "\n"[0];
+var PLUS    = "+"[0];
+var STAR    = "*"[0];
+
+fun is_digit(c: int) -> bool {
+    c >= ZERO and c <= NINE
+}
+
+class Node {
+    var inputs = [0, 0, 0, 0];
+    var op     = 0;
+    var idx    = 0;
+    var next: Node? = nil;
+
+    fun insert(val: int) {
+        inputs[idx] = val;
+        idx = idx + 1;
+    }
+
+    fun fold() -> int {
+        var i = 0;
+        var total = lerp(0, 1, op == STAR);
+        while i < inputs.length {
+            if op == STAR { total = total * inputs[i]; }
+            else          { total = total + inputs[i]; }
+
+            i = i + 1;
+        }
+
+        return total;
+    }
+}
+
+class LinkedList {
+    var head: Node? = nil;
+    var tail: Node? = nil;
+
+    fun push(node: Node) {
+        // // Append to the tail
+        // var tail = tail else {
+        //     head = node;
+        //     tail = node;
+        //     return;
+        // };
+
+        // tail.next = node;
+        // // Yep, this is the thing: If we name a local variable the same
+        // // as the class vasriable, reassigning it does *NOTHING*.
+        // tail = node;
+
+        var tail_ = tail else {
+            head = node;
+            tail = node;
+            return;
+        };
+        tail_.next = node;
+        tail = node;
+    }
+}
+
+class Text {
+    var text: StrBuf = "";
+    var idx: int = 0;
+    var line_len: int = 0;
+
+    fun compute_line_len() -> int {
+        var i = 0;
+        while text[i] != NEWLINE {
+            i = i + 1;
+        }
+        return i;
+    }
+
+    fun add_row(input: int, row: int) -> int {
+        var c = text[idx + line_len * row];
+        if c == SPACE { return input; }
+
+        return input * 10 + c - ZERO;
+    }
+
+    fun has_valid_column() -> bool {
+        idx < line_len
+    }
+
+    // Parses the next column. ALso returns the operator row, which is either
+    // ' ' or an operator.
+    fun next_column() -> (int, int) {
+        var value: int = 0;
+        value = add_row(value, 0);
+        value = add_row(value, 1);
+        value = add_row(value, 2);
+        value = add_row(value, 3);
+        
+        var op = text[idx + line_len * 4];
+
+        // Increment idx.
+        idx = idx + 1;
+
+        (value, op);
+    }
+}
+
+fun init() {
+    var text = new Text {
+        text: read_file("input.txt")
+    };
+    text.line_len = text.compute_line_len();
+
+    var list = new LinkedList{};
+    
+    var next_node = new Node{};
+
+    while text.has_valid_column() {
+        // TODO: We need destructuring :(
+        //var (num, op) = text.next_column();
+        var next_num_op = text.next_column();
+        var num = next_num_op.0;
+        var op  = next_num_op.1;
+
+        // If we have a new operator, start a new node.
+        if op != SPACE {
+            next_node = new Node {
+                op: op,
+            };
+            list.push(next_node);
+        }
+
+        // Insert the number into the next node.
+        next_node.insert(num);
+    }
+
+    var iter = list.head;
+    var sum = 0;
+    loop {
+        var item = iter else { break; };
+
+        sum = sum + print(item.fold());
+
+        iter = item.next;
+    }
+
+    print("sum: ", sum);
+}
