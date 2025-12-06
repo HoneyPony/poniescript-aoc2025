@@ -27,7 +27,7 @@ class Node {
     fun fold() -> int {
         var i = 0;
         var total = lerp(0, 1, op == STAR);
-        while i < inputs.length {
+        while i < idx and i < inputs.length {
             if op == STAR { total = total * inputs[i]; }
             else          { total = total + inputs[i]; }
 
