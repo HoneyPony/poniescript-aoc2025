@@ -16,6 +16,10 @@ class Node {
     var next: Node? = nil;
 
     fun insert(val: int) {
+        if idx >= inputs.length {
+            print("oops: ", inputs[0], " ", inputs[1], " ", inputs[2], " ", inputs[3], " ", val);
+            return;
+        }
         inputs[idx] = val;
         idx = idx + 1;
     }
@@ -122,6 +126,7 @@ fun init() {
 
         // If we have a new operator, start a new node.
         if op != SPACE {
+            print("prev node: ", next_node.inputs[0], " ", next_node.inputs[1], " ", next_node.inputs[2], " ", next_node.inputs[3]);
             next_node = new Node {
                 op: op,
             };
