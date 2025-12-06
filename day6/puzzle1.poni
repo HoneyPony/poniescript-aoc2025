@@ -23,14 +23,24 @@ class LinkedList {
     var tail: Node? = nil;
 
     fun push(node: Node) {
-        // Append to the tail
-        var tail = tail else {
+        // // Append to the tail
+        // var tail = tail else {
+        //     head = node;
+        //     tail = node;
+        //     return;
+        // };
+
+        // tail.next = node;
+        // // Yep, this is the thing: If we name a local variable the same
+        // // as the class vasriable, reassigning it does *NOTHING*.
+        // tail = node;
+
+        var tail_ = tail else {
             head = node;
             tail = node;
             return;
         };
-
-        tail.next = node;
+        tail_.next = node;
         tail = node;
     }
 }
