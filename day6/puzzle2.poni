@@ -131,7 +131,12 @@ fun init() {
 
     var list = new LinkedList{};
     
-    var next_node = new Node{};
+    var next_node: Node? = nil;
+
+    fun insert_if_nonnil(next_node: Node?, value: int) {
+        var next_node = next_node else { return; };
+        next_node.insert(value);
+    }
 
     while text.has_valid_column() {
         // TODO: We need destructuring :(
@@ -142,15 +147,15 @@ fun init() {
 
         // If we have a new operator, start a new node.
         if op != SPACE {
-            print("prev node: ", next_node.inputs[0], " ", next_node.inputs[1], " ", next_node.inputs[2], " ", next_node.inputs[3]);
-            next_node = new Node {
+            var node = new Node {
                 op: op,
             };
-            list.push(next_node);
+            list.push(node);
+            next_node = node;
         }
 
         // Insert the number into the next node.
-        next_node.insert(num);
+        insert_if_nonnil(next_node, num);
     }
 
     var iter = list.head;
