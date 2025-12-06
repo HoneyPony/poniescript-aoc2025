@@ -1,0 +1,42 @@
+fun doer_two(array: Array[int], idx: int) -> int {
+    print(array[idx]);
+    array[idx] + 1
+}
+
+fun do_all_two(array: Array[int], func: fun(Array[int], int) -> int) {
+    var i = 0;
+    while i <= array.length {
+        array[i] = func(array, i);
+        //i + i + 1;
+        i = i + 1;
+    }
+}
+
+fun doer(val: int) -> int {
+    print(val);
+    val + 1
+}
+
+// TODO: BUG: if we have a function that takes a fun(int) -> int, but never
+// construct such a function, the sig isn't generated...?
+// fun do_all(array: Array[int], func: fun(int) -> int) {
+//     var i = 0;
+//     while i <= array.length {
+//         array[i] = func(array[i]);
+//         //i + i + 1;
+//         i = i + 1;
+//     }
+// }
+
+fun do_it_inner() {
+    var array = [1, 2, 3];
+    do_all_two(array, doer_two);
+}
+
+fun do_it() {
+    do_it_inner();
+}
+
+fun init() {
+    do_it();
+}
