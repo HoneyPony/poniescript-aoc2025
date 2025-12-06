@@ -89,7 +89,7 @@ class Text {
     }
 
     fun has_valid_column() -> bool {
-        idx < line_len
+        idx < line_len - 1
     }
 
     fun next_column_is_blank() -> bool {
