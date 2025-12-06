@@ -75,13 +75,16 @@ class Text {
         while text[i] != NEWLINE {
             i = i + 1;
         }
-        return i;
+        return i + 1;
     }
 
     fun add_row(input: int, row: int) -> int {
         var c = text[idx + line_len * row];
-        if c == SPACE { return input; }
+        if c == SPACE { //print("idx ", idx, " row ", row, ": space");
+            return input;
+        }
 
+        //print("idx ", idx, " row ", row, ": ", c - ZERO); 
         return input * 10 + c - ZERO;
     }
 
@@ -89,9 +92,22 @@ class Text {
         idx < line_len
     }
 
+    fun next_column_is_blank() -> bool {
+        var i = 0;
+        while i < 5 {
+            if text[idx + line_len * i] != SPACE { return false; }
+            i = i + 1;
+        }
+        true
+    }
+
     // Parses the next column. ALso returns the operator row, which is either
     // ' ' or an operator.
     fun next_column() -> (int, int) {
+        while next_column_is_blank() {
+            idx = idx + 1;
+        }
+
         var value: int = 0;
         value = add_row(value, 0);
         value = add_row(value, 1);
