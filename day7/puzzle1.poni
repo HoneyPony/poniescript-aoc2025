@@ -8,6 +8,8 @@ class Grid {
     var width : int = 0;
     var height: int = 0;
 
+    var split_count: int = 0;
+
     fun get(xy: vec2i) -> int {
         if xy.0 < 0 or xy.0 >= width { return 0; }
         if xy.1 < 0 or xy.1 >= height { return 0; }
@@ -23,6 +25,39 @@ class Grid {
     fun has_active_splitter(xy: vec2i) -> bool {
         if get(xy) != CARET { return false; }
         return get(xy - (0, 1)) == PIPE;
+    }
+
+    fun process_beam(pos: vec2i) {
+        //print("start @ ", pos);
+        while pos.1 < height {
+            var next = get(pos);
+            if next == PIPE {
+                return; // Already done.
+            }
+            if next == CARET {
+                split_count = split_count + 1;
+                print(split_count);
+                var left = pos - (1, 0);
+                var right = pos + (1, 0);
+                process_beam(left);
+                process_beam(right);
+                return;
+            }
+            set(pos, PIPE);
+            pos.1 = pos.1 + 1;
+        }
+    }
+
+    fun start_beam() {
+        var pos = (0, 0);
+        while pos.0 < width {
+            if get(pos) == S {
+                print("start beam @ ", pos);
+                process_beam(pos);
+                return;
+            }
+            pos.0 = pos.0 + 1;
+        }
     }
 
     fun process_row(row: int) {
@@ -57,7 +92,7 @@ fun make_grid(text: StrBuf) -> Grid {
     while height * width < text.length {
         height = height + 1;
     }
-    height = height - 1;
+    height = height - 2;
 
     new Grid {
         text: text,
@@ -68,13 +103,16 @@ fun make_grid(text: StrBuf) -> Grid {
 
 fun init() {
     var grid = make_grid(read_file("input.txt"));
+    print(grid.width, grid.height);
+    grid.start_beam();
 
-    var y = 1;
-    while y < grid.height {
-        grid.process_row(y);
-        y = y + 1;
-    }
+    // var y = 1;
+    // while y < grid.height {
+    //     grid.process_row(y);
+    //     y = y + 1;
+    // }
 
     // Print rows for debugging
     print(grid.text);
+    print(grid.split_count);
 }
