@@ -99,8 +99,7 @@ fun init() {
         var start = min(lows);
         var end = max(highs);
 
-        var check = start;
-        while check <= end {
+        for check in start..end {
             var val = check + check * nearest_smaller_power_ten(check);
 
             if val >= num1 and val <= num2 {
@@ -108,7 +107,7 @@ fun init() {
                 sum = sum + val;
             }
 
-            check = check + 1;
+            0;
         };
 
         //print("lows: ", lows.0, " ", lows.1);
