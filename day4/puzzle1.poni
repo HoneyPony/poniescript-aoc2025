@@ -44,8 +44,8 @@ fun init() {
 
     print(grid.width, " ", grid.height);
 
-    for x in 0 .. grid.width {
-        for y in 0 .. grid.height {
+    for x in 0..grid.width {
+        for y in 0..grid.height {
             var this_cell_sum = 0;
 
             if grid.is_paper(x, y) {
