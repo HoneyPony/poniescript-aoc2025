@@ -1,0 +1,80 @@
+var NEWLINE = "\n"[0];
+var S       = "S"[0];
+var CARET   = "^"[0];
+var PIPE    = "|"[0];
+
+class Grid {
+    var text  : StrBuf = "";
+    var width : int = 0;
+    var height: int = 0;
+
+    fun get(xy: vec2i) -> int {
+        if xy.0 < 0 or xy.0 >= width { return 0; }
+        if xy.1 < 0 or xy.1 >= height { return 0; }
+        return text[xy.1 * (width + 1) + xy.0];
+    }
+
+    fun set(xy: vec2i, val: int) {
+        if xy.0 < 0 or xy.0 >= width { return; }
+        if xy.1 < 0 or xy.1 >= height { return; }
+        text[xy.1 * (width + 1) + xy.0] = val;
+    }
+
+    fun has_active_splitter(xy: vec2i) -> bool {
+        if get(xy) != CARET { return false; }
+        return get(xy - (0, 1)) == PIPE;
+    }
+
+    fun process_row(row: int) {
+        var x = 0;
+        while x < width {
+            //print(x, " ", row, " ", get((x, row - 1)), " ", get((x, row - 1)) == S);
+            var is_pipe = false;
+            if get((x, row - 1)) == S {
+                is_pipe = true;
+            }
+            if has_active_splitter((x - 1, row - 1)) or has_active_splitter((x + 1, row - 1)) {
+                is_pipe = true;
+            }
+
+            if is_pipe {
+                set((x, row), PIPE);
+            }
+            
+            x = x + 1;
+        }
+    }
+}
+
+fun make_grid(text: StrBuf) -> Grid {
+    // Compute width so we can treat text like a 2D array
+    var width = 0;
+    while text[width] != NEWLINE {
+        width = width + 1;
+    }
+
+    var height = 0;
+    while height * width < text.length {
+        height = height + 1;
+    }
+    height = height - 1;
+
+    new Grid {
+        text: text,
+        width: width,
+        height: height,
+    }
+}
+
+fun init() {
+    var grid = make_grid(read_file("input.txt"));
+
+    var y = 1;
+    while y < grid.height {
+        grid.process_row(y);
+        y = y + 1;
+    }
+
+    // Print rows for debugging
+    print(grid.text);
+}
