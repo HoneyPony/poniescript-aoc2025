@@ -3,13 +3,47 @@ var S       = "S"[0];
 var CARET   = "^"[0];
 var PIPE    = "|"[0];
 
+class Node {
+    var key  : vec2i = (0, 0);
+    var value: int = 0;
+    var next : Node? = nil;
+}
+
+class LinkedList {
+    var head: Node? = nil;
+    var tail: Node? = nil;
+
+    fun push(node: Node) {
+        var tail_ = tail else {
+            head = node;
+            tail = node;
+            return;
+        };
+        tail_.next = node;
+        tail = node;
+    }
+    
+    fun lookup(key: vec2i) -> (int, bool) {
+        var iter = head;
+        loop {
+            var item = iter else { break; };
+
+            if item.key.0 == key.0 and item.key.1 == key.1 {
+                return (item.value, true);
+            }
+
+            iter = item.next;
+        }
+        return (0, false);
+    }
+}
+
 class Grid {
     var text  : StrBuf = "";
     var width : int = 0;
     var height: int = 0;
 
-    var split_count: int = 0;
-    var printc: int = 0;
+    var cached: LinkedList = new LinkedList{};
 
     fun get(xy: vec2i) -> int {
         if xy.0 < 0 or xy.0 >= width { return 0; }
@@ -28,61 +62,44 @@ class Grid {
         return get(xy - (0, 1)) == PIPE;
     }
 
-    fun process_beam(pos: vec2i) {
-        //print("start @ ", pos);
+    fun compute_beam_uncached(pos: vec2i) -> int {
         while pos.1 < height {
             var next = get(pos);
-            // if next == PIPE {
-            //     return; // Already done.
-            // }
             if next == CARET {
-                split_count = split_count + 1;
-                printc = printc + 1;
-                if printc >= 1000 {
-                    print(split_count);
-                    printc = 0;
-                }
                 var left = pos - (1, 0);
                 var right = pos + (1, 0);
-                process_beam(left);
-                process_beam(right);
-                return;
+
+                return compute_beam(left) + compute_beam(right);
             }
-            set(pos, PIPE);
             pos.1 = pos.1 + 1;
         }
+
+        // Escaped beam is 1.
+        return 1;
     }
 
-    fun start_beam() {
+    fun compute_beam(pos: vec2i) -> int {
+        var check = cached.lookup(pos);
+        if check.1 {
+            return check.0;
+        }
+
+        var val = compute_beam_uncached(pos);
+        cached.push(new Node { key: pos, value: val });
+
+        return val;
+    }
+
+    fun compute_from_s() -> int {
         var pos = (0, 0);
         while pos.0 < width {
             if get(pos) == S {
                 print("start beam @ ", pos);
-                process_beam(pos);
-                return;
+                return compute_beam(pos);
             }
             pos.0 = pos.0 + 1;
         }
-    }
-
-    fun process_row(row: int) {
-        var x = 0;
-        while x < width {
-            //print(x, " ", row, " ", get((x, row - 1)), " ", get((x, row - 1)) == S);
-            var is_pipe = false;
-            if get((x, row - 1)) == S {
-                is_pipe = true;
-            }
-            if has_active_splitter((x - 1, row - 1)) or has_active_splitter((x + 1, row - 1)) {
-                is_pipe = true;
-            }
-
-            if is_pipe {
-                set((x, row), PIPE);
-            }
-            
-            x = x + 1;
-        }
+        return 0;
     }
 }
 
@@ -109,7 +126,8 @@ fun make_grid(text: StrBuf) -> Grid {
 fun init() {
     var grid = make_grid(read_file("input.txt"));
     print(grid.width, grid.height);
-    grid.start_beam();
+    var value = grid.compute_from_s();
+    print(value);
 
     // var y = 1;
     // while y < grid.height {
@@ -118,6 +136,6 @@ fun init() {
     // }
 
     // Print rows for debugging
-    print(grid.text);
-    print(grid.split_count);
+    //print(grid.text);
+    //print(grid.split_count);
 }
