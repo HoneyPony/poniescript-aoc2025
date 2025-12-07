@@ -44,9 +44,8 @@ fun init() {
 
     print(grid.width, " ", grid.height);
 
-    while x < grid.width {
-        var y = 0;
-        while y < grid.height {
+    for x in 0 .. grid.width {
+        for y in 0 .. grid.height {
             var this_cell_sum = 0;
 
             if grid.is_paper(x, y) {
@@ -67,10 +66,7 @@ fun init() {
 
                 0
             }
-
-            y = y + 1;
         }
-        x = x + 1;
     }
 
     print(sum);
