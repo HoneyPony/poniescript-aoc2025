@@ -15,6 +15,7 @@ fun is_not_digit(c: int) -> bool {
 
 class GraphSize {
     var size: int = 0;
+    var used: bool = false;
 }
 
 class Box {
@@ -62,7 +63,7 @@ class Box {
         size_
     }
 
-    fun get_graph_size() -> int {
+    fun get_graph_size() -> GraphSize {
         var existing = size else {
             //print("--- begin circuit ---");
             var size_ = compute_graph_size();
@@ -84,9 +85,9 @@ class Box {
                 iter = item.next2;
             }
 
-            return size_.size;
+            return size_;
         };
-        existing.size
+        existing
     }
 
     fun get_other(connect: Connect) -> Box {
@@ -357,26 +358,31 @@ fun init() {
         var item = iter else { break; };
 
         var size = item.get_graph_size();
-        print("graph size: ", size);
+        if not_(size.used) {
+            size.used = true;
+            var size = size.size;
+            print("graph size: ", size);
 
-        if size > best_sizes[0] {
-            best_sizes[2] = best_sizes[1];
-            best_sizes[1] = best_sizes[0];
-            best_sizes[0] = size;
-        }
-        else {
-            if size > best_sizes[1] {
+            if size > best_sizes[0] {
                 best_sizes[2] = best_sizes[1];
-                best_sizes[1] = size;
+                best_sizes[1] = best_sizes[0];
+                best_sizes[0] = size;
             }
             else {
-                if size > best_sizes[2] {
-                    best_sizes[2] = size;
+                if size > best_sizes[1] {
+                    best_sizes[2] = best_sizes[1];
+                    best_sizes[1] = size;
+                }
+                else {
+                    if size > best_sizes[2] {
+                        best_sizes[2] = size;
+                    }
+
+                    0;
                 }
 
                 0;
             }
-
             0;
         }
 
