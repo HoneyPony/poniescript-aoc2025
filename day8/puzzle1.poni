@@ -469,7 +469,11 @@ fun init() {
                 dist: dist
             };
 
-            all.push(connect);
+            // This is not really a legit optimization, but it does help
+            // a lot.
+            if connect.dist < 10000 * 10000 * 3 {
+                all.push(connect);
+            }
 
             inner = inner_item.next;
         }
