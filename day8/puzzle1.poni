@@ -166,6 +166,86 @@ class Connect {
     var next3: Connect? = nil;
 }
 
+/// Returns the node pointing to term.
+fun merge_sort(head: Connect, node: Connect, len: int, term: Connect?) -> Connect {
+    if len <= 1 {
+        // Already sorted.
+        return node;
+    }
+
+    var half = len / 2;
+    var first = node;
+    var others = {
+        var iter: Connect? = node;
+        var prev = node;
+        for i in 0..half {
+            var item = iter else { break; };
+            prev = item;
+            iter = item.next;
+        };
+        (prev, iter else { print("uh oh (no second node)"); new Connect{} })
+    };
+    var second = others.1;
+
+    var left_len  = half;
+    var right_len = len - half;
+    //print("sort: ", left_len, " ", right_len);
+
+    var s = merge_sort(head    , first , left_len , second);
+    merge_sort(s, second, right_len, term);
+
+    // Now, merge the two sorted halves.
+    var left_idx = 0;
+    var right_idx = 0;
+    var out = head;
+
+    var left_read = head.next;
+    var right_read = {
+        var iter: Connect? = head;
+        for i in 0..=half {
+            var item = iter else { break; };
+            iter = item.next;
+        };
+        iter
+    };
+
+    while left_idx < left_len or right_idx < right_len {
+        var left = left_read else { print("uh oh (no left node)"); return node; };
+        var right = right_read else { print("uh oh (no right node)"); return node; };
+
+        var use_left = false;
+        if left_idx >= left_len { use_left = false; }
+        else {
+            if right_idx >= right_len { use_left = true; }
+            else { use_left = left.dist < right.dist; }
+        }
+
+        if use_left {
+            out.next = left;
+            out = left;
+            left_read = left.next;
+            left_idx = left_idx + 1;
+        }
+        else {
+            out.next = right;
+            out = right;
+            right_read = right.next;
+            right_idx = right_idx + 1;
+        }
+    }
+
+    // print("-- locally sorted --", len);
+    // var iter = head.next;
+    // for i in 0..len {
+    //     var item = iter else { break; };
+    //     print(item.dist);
+    //     iter = item.next;
+    // }
+
+    out.next = term;
+    return out;
+}
+
 class ConnectList {
     var head: Connect? = nil;
     var tail: Connect? = nil;
@@ -198,6 +278,23 @@ class ConnectList {
         };
         tail_.next3 = node;
         tail = node;
+    }
+
+    fun sort_with_dummy_node() {
+        // Calculate initial len.
+        var len = 0;
+        var iter = head;
+        loop {
+            var item = iter else { break; };
+            len = len + 1;
+            iter = item.next;
+        }
+        
+        var head = head else { return; };
+        var first = head.next else { return; };
+
+        print("merge sort: ", len - 1);
+        merge_sort(head, first, len - 1, nil);
     }
 }
 
@@ -348,8 +445,10 @@ fun init() {
     }
 
     var iter = list.head;
-    var small = new ConnectList{};
-    var big = new ConnectList{};
+    // var small = new ConnectList{};
+    // var big = new ConnectList{};
+    var all = new ConnectList{};
+    all.push(new Connect{}); // dummy node
     loop {
         var item = iter else { break; };
         
@@ -367,12 +466,7 @@ fun init() {
                 dist: dist
             };
 
-            if dist < (10000 * 10000 * 3) {
-                small.push(connect);
-            }
-            else {
-                big.push(connect);
-            }
+            all.push(connect);
 
             inner = inner_item.next;
         }
@@ -380,11 +474,23 @@ fun init() {
         iter = item.next;
     }
 
+    all.sort_with_dummy_node();
+
+    // var iter = all.head;
+    // loop {
+    //     var item = iter else { break; };
+    //     print("sorted: ", item.dist);
+    //     iter = item.next;
+    // }
+
+    // return;
+
     var progress = 0;
 
-    for i in 0..1000 {
-        var best = find_best(small, big);
+    var best = all.head;
+    var best = best else { print("no best?"); return; };
 
+    for i in 0..1000 {
         best.first.connected.push2(best);
         best.second.connected2.push3(best);
 
@@ -393,6 +499,8 @@ fun init() {
             print("progress: ", i);
             progress = progress - 10;
         }
+
+        best = best.next else { print("ran out of nodes"); break; };
     }
 
     do_best_sizes(list);
