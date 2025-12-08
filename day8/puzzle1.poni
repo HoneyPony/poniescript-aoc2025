@@ -211,13 +211,15 @@ fun merge_sort(head: Connect, node: Connect, len: int, term: Connect?) -> Connec
 
     while left_idx < left_len or right_idx < right_len {
         var left = left_read else { print("uh oh (no left node)"); return node; };
-        var right = right_read else { print("uh oh (no right node)"); return node; };
 
         var use_left = false;
         if left_idx >= left_len { use_left = false; }
         else {
             if right_idx >= right_len { use_left = true; }
-            else { use_left = left.dist < right.dist; }
+            else {
+                var right = right_read else { print("uh oh (no right node)"); return node; };
+                use_left = left.dist < right.dist;
+            }
         }
 
         if use_left {
@@ -227,6 +229,7 @@ fun merge_sort(head: Connect, node: Connect, len: int, term: Connect?) -> Connec
             left_idx = left_idx + 1;
         }
         else {
+            var right = right_read else { print("uh oh (no right node)"); return node; };
             out.next = right;
             out = right;
             right_read = right.next;
