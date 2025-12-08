@@ -13,8 +13,75 @@ fun is_not_digit(c: int) -> bool {
     c < ZERO or c > NINE
 }
 
+class GraphSize {
+    var size: int = 0;
+}
+
 class Box {
+    var id: int = 0;
     var pos: vec3 = (0, 0, 0);
+
+    var can_connect: ConnectList = new ConnectList{};
+    var connected: ConnectList = new ConnectList{};
+
+    var size: GraphSize? = nil;
+
+    var visited: bool = false;
+
+    fun compute_graph_size() -> int {
+        visited = true;
+
+        print(pos);
+        var size_ = 1;
+
+        var iter = connected.head;
+
+        loop {
+            var item = iter else { break; };
+
+            var other = get_other(item);
+            if not_(other.visited) {
+                //size_ = size_ + 1;
+                size_ = size_ + other.compute_graph_size();
+            }
+            //if not_(item.visited) {
+            //    item.visited = true;
+                //size_ = size_ + 1;
+                //size_ = size_ + get_other(item).compute_graph_size();
+            //}
+
+            iter = item.next2;
+        }
+
+        size_
+    }
+
+    fun get_graph_size() -> int {
+        var existing = size else {
+            print("--- begin circuit ---");
+            var size_ = compute_graph_size();
+            var size_ = new GraphSize { size: size_ };
+            
+            // cache this.
+            var iter = connected.head;
+
+            loop {
+                var item = iter else { break; };
+
+                item.first.size = size_;
+                item.second.size = size_;
+
+                iter = item.next;
+            }
+
+            return size_.size;
+        };
+        existing.size
+    }
+
+    fun get_other(connect: Connect) -> Box {
+        if connect.first_id == id { connect.second } else { connect.first }
+    }
 
     // Linked list
     var next: Box? = nil;
@@ -35,6 +102,81 @@ class LinkedList {
     }
 }
 
+class Connect {
+    var first: Box = new Box{};
+    var second: Box = new Box{};
+    var first_id: int = 0;
+    var dist: float = 0;
+
+    // Whether this connect has been used as a connection.
+    var used: bool = false;
+
+    // Whether this connect has been visited in DFS.
+    // var visited: bool = false;
+
+    // Linked list
+    var next: Connect? = nil;
+    
+    // Other linked list
+    var next2: Connect? = nil;
+}
+
+class ConnectList {
+    var head: Connect? = nil;
+    var tail: Connect? = nil;
+
+    fun push(node: Connect) {
+        var tail_ = tail else {
+            head = node;
+            tail = node;
+            return;
+        };
+        tail_.next = node;
+        tail = node;
+    }
+
+    fun push2(node: Connect) {
+        var tail_ = tail else {
+            head = node;
+            tail = node;
+            return;
+        };
+        tail_.next2 = node;
+        tail = node;
+    }
+
+    // Inserts the new node when it has a good distance.
+    fun insert_after(node: Connect) {
+        var head_ = head else {
+            head = node;
+            tail = node;
+            return;
+        };
+
+        if node.dist < head_.dist {
+            node.next = head_;
+            head = node;
+            return;
+        }
+
+        var before = head_;
+        var iter = head_.next;
+        loop {
+            var next = iter else { break; };
+            // This is the right position.
+            if node.dist < next.dist {
+                break;
+            }
+
+            before = next;
+            iter = next.next;
+        }
+
+        node.next = before.next;
+        before.next = node;
+    }
+}
+
 class Text {
     var text: StrBuf = "";
     var idx = 0;
@@ -50,9 +192,9 @@ class Text {
             idx = idx + 1;
         };
 
-        while idx < text.length and is_not_digit(text[idx]) { idx = idx + 1; }
+        while idx < text.length and is_not_digit(text[idx]) { idx = idx + 1; };
 
-        print(x, got);
+        //print(x, got);
         (x, got)
     }
 
@@ -74,22 +216,164 @@ class Text {
     }
 }
 
-fun read_text() -> Text { new Text { text: read_file("input.txt") } }
+fun read_text() -> Text { new Text { text: read_file("help-input.txt") } }
+
+fun not_(b: bool) -> bool {
+    if b { false } else { true }
+}
+
+fun find_best(list: LinkedList) -> Connect {
+    // Now this is sad.
+    var iter = list.head;
+    var first = iter else { return new Connect{}; };
+    var best = first.can_connect.head;
+    var best = best else { return new Connect{}; };
+
+    //print(best.first.pos, " ", best.second.pos);
+    var nr_touched = 0;
+    var nr_touched_unused = 0;
+
+    loop {
+        var item = iter else { break; };
+
+        var iterc = item.can_connect.head;
+        loop {
+            var itemc = iterc else { break; };
+
+            if not_(itemc.used) {
+                if not_(itemc.used) {
+                    nr_touched_unused = nr_touched_unused + 1;
+                }
+
+                nr_touched = nr_touched + 1;
+                if best.used and not_(itemc.used) {
+                    //print("best: ", best.first.pos, best.second.pos, " vs: ", itemc.first.pos, itemc.second.pos);
+                    best = itemc;
+                    //print("best is now", best.first.pos, best.second.pos);
+                }
+                else {
+                    if best.dist > itemc.dist {
+                        best = itemc;
+                    }
+
+                    0;
+                }
+
+                0;
+            }
+
+            iterc = itemc.next;
+        }
+
+        iter = item.next;
+        //print("meow: ", item.pos);
+    }
+
+    //print("nr_touched: ", nr_touched, " (unused): ", nr_touched_unused, " was used: ", best.used);
+
+    // We used this one.
+    best.used = true;
+
+    //print("want to return: ", best.first.pos, best.second.pos);
+
+    best
+}
 
 fun init() {
     var text = read_text();
 
     var list = new LinkedList{};
+    var id = 1;
     loop {
         var box = text.box() else { break; };
+        box.id = id;
+        id = id + 1;
         list.push(box);
     }
 
     var iter = list.head;
+    var n_connects = 0;
     loop {
         var item = iter else { break; };
-        print(item.pos);
+        
+        // Connect all the ones *after* this one.
+        var inner = item.next;
+        loop {
+            var inner_item = inner else { break; };
+            var dist = inner_item.pos - item.pos;
+
+            var connect = new Connect {
+                first: item,
+                first_id: item.id,
+                second: inner_item,
+                dist: (dist.0 * dist.0 + dist.1 * dist.1 + dist.2 * dist.2)
+            };
+
+            item.can_connect.push(connect);
+
+            n_connects = n_connects + 1;
+
+            inner = inner_item.next;
+        }
 
         iter = item.next;
     }
+
+    print("n_connects: ", n_connects);
+
+    var progress = 0;
+
+    for i in 0..10 {
+        var best = find_best(list);
+
+        best.first.connected.push2(best);
+        best.second.connected.push2(best);
+
+        progress = progress + 1;
+        if progress >= 10 {
+            print("progress: ", i);
+            progress = progress - 10;
+        }
+
+        0; //?
+        //print(best.first.pos, " ", best.second.pos, " ", best.used);
+    }
+
+    print("then");
+
+    var best_sizes = [0, 0, 0];
+    var iter = list.head;
+    loop {
+        var item = iter else { break; };
+
+        var size = item.get_graph_size();
+        print("graph size: ", size);
+
+        if size > best_sizes[0] {
+            best_sizes[2] = best_sizes[1];
+            best_sizes[1] = best_sizes[0];
+            best_sizes[0] = size;
+        }
+        else {
+            if size > best_sizes[1] {
+                best_sizes[2] = best_sizes[1];
+                best_sizes[1] = size;
+            }
+            else {
+                if size > best_sizes[2] {
+                    best_sizes[2] = size;
+                }
+
+                0;
+            }
+
+            0;
+        }
+
+        iter = item.next;
+    }
+
+    print(best_sizes[0], " ", best_sizes[1], " ", best_sizes[2]);
+    print(best_sizes[0] * best_sizes[1] * best_sizes[2]);
+    //print(best.first.pos, " ", best.second.pos);
 }
