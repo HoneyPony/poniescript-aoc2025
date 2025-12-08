@@ -430,7 +430,6 @@ fun init() {
                 big.push(connect);
             }
             
-
             n_connects = n_connects + 1;
 
             inner = inner_item.next;
