@@ -20,7 +20,7 @@ class GraphSize {
 
 class Box {
     var id: int = 0;
-    var pos: vec3 = (0, 0, 0);
+    var pos: vec3i = (0, 0, 0);
 
     var connected: ConnectList = new ConnectList{};
     var connected2: ConnectList = new ConnectList{};
@@ -264,7 +264,7 @@ class Text {
     }
 
     fun box() -> Box? {
-        var nums = [0.0, 0.0, 0.0];
+        var nums = [0, 0, 0];
         for i in 0..nums.length {
             var next = number();
             if next.1 {
@@ -287,28 +287,40 @@ fun not_(b: bool) -> bool {
     if b { false } else { true }
 }
 
-fun find_best(list: ConnectList) -> Connect {
-    var iter = list.head;
-    var best = list.head;
-    var best = best else { return new Connect{}; };
+fun find_best(small: ConnectList, big: ConnectList) -> Connect {
+    fun find_best_impl(list: ConnectList) -> Connect {
+        var iter = list.head;
+        var best = list.head;
+        var best = best else { return new Connect{}; };
 
-    loop {
-        var item = iter else { break; };
+        loop {
+            var item = iter else { break; };
 
-        if not_(item.used) {
-            if best.used {
-                best = item;
-            }
-            else {
-                if best.dist > item.dist {
+            if not_(item.used) {
+                if best.used {
                     best = item;
+                }
+                else {
+                    if best.dist > item.dist {
+                        best = item;
+                    }
+                    0;
                 }
                 0;
             }
-            0;
+
+            iter = item.next;
         }
 
-        iter = item.next;
+        best
+    }
+
+    var best = find_best_impl(small);
+
+    // If we used every single one, we have to make a pass through the big
+    // connectlist.
+    if best.used {
+        best = find_best_impl(big);
     }
 
     // We used this one.
@@ -390,7 +402,9 @@ fun init() {
 
     var iter = list.head;
     var n_connects = 0;
-    var in_order: ConnectList = new ConnectList{};
+    var small = new ConnectList{};
+    var big = new ConnectList{};
+    var smlen = 0;
     loop {
         var item = iter else { break; };
         
@@ -399,15 +413,23 @@ fun init() {
         loop {
             var inner_item = inner else { break; };
             var dist = inner_item.pos - item.pos;
-
+            var dist = (dist.0 * dist.0 + dist.1 * dist.1 + dist.2 * dist.2);
+           
             var connect = new Connect {
                 first: item,
                 first_id: item.id,
                 second: inner_item,
-                dist: (dist.0 * dist.0 + dist.1 * dist.1 + dist.2 * dist.2)
+                dist: dist
             };
 
-            in_order.push(connect);
+            if dist < (10000 * 10000 * 3) {
+                small.push(connect);
+                smlen = smlen + 1;
+            }
+            else {
+                big.push(connect);
+            }
+            
 
             n_connects = n_connects + 1;
 
@@ -417,12 +439,12 @@ fun init() {
         iter = item.next;
     }
 
-    print("n_connects: ", n_connects);
+    print("smlen: ", smlen);
 
     var progress = 0;
 
     for i in 0..1000 {
-        var best = find_best(in_order);
+        var best = find_best(small, big);
 
         //print("new connection: ", best.first.id, " ", best.second.id);
 
