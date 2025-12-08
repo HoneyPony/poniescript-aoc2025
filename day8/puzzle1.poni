@@ -32,7 +32,7 @@ class Box {
     fun compute_graph_size() -> int {
         visited = true;
 
-        print(pos);
+        //print(pos);
         var size_ = 1;
 
         var iter = connected.head;
@@ -63,6 +63,36 @@ class Box {
         size_
     }
 
+    fun has_size() -> bool {
+        var s = size else { return false; };
+        return true;
+    }
+
+    fun _set_graph(size_: GraphSize) {
+        if not_(has_size()) {
+            size = size_;
+            var iter = connected.head;
+            //var nr = 1;
+
+            loop {
+                var item = iter else { break; };
+
+                //print("size: ", size_.size, " set: ", nr);
+                //nr = nr + 1;
+
+                var other = get_other(item);
+                other._set_graph(size_);
+
+                //print("id ", item.first.id, " ", size_.size);
+                //print("id ", item.second.id, " ", size_.size);
+
+                iter = item.next2;
+            }
+
+            return;
+        }
+    }
+
     fun get_graph_size() -> GraphSize {
         var existing = size else {
             //print("--- begin circuit ---");
@@ -71,19 +101,7 @@ class Box {
             var size_ = new GraphSize { size: size_ };
             
             // cache this.
-            var iter = connected.head;
-
-            loop {
-                var item = iter else { break; };
-
-                item.first.size = size_;
-                item.second.size = size_;
-
-                //print("id ", item.first.id, " ", size_.size);
-                //print("id ", item.second.id, " ", size_.size);
-
-                iter = item.next2;
-            }
+            _set_graph(size_);
 
             return size_;
         };
@@ -227,7 +245,7 @@ class Text {
     }
 }
 
-fun read_text() -> Text { new Text { text: read_file("help-input.txt") } }
+fun read_text() -> Text { new Text { text: read_file("input.txt") } }
 
 fun not_(b: bool) -> bool {
     if b { false } else { true }
@@ -334,7 +352,7 @@ fun init() {
 
     var progress = 0;
 
-    for i in 0..10 {
+    for i in 0..1000 {
         var best = find_best(list);
 
         best.first.connected.push2(best);
@@ -358,10 +376,11 @@ fun init() {
         var item = iter else { break; };
 
         var size = item.get_graph_size();
+        print("size: ", size.size);
         if not_(size.used) {
             size.used = true;
             var size = size.size;
-            print("graph size: ", size);
+            //print("graph size: ", size);
 
             if size > best_sizes[0] {
                 best_sizes[2] = best_sizes[1];
