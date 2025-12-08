@@ -106,8 +106,6 @@ fun init() {
                 //print("meow: ", val);
                 sum = sum + val;
             }
-
-            0;
         };
 
         //print("lows: ", lows.0, " ", lows.1);

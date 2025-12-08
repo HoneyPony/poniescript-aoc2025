@@ -271,8 +271,6 @@ class Text {
                 nums[i] = next.0;
             }
             else { return nil; }
-
-            0;
         };
 
         new Box {
@@ -304,9 +302,7 @@ fun find_best(small: ConnectList, big: ConnectList) -> Connect {
                     if best.dist > item.dist {
                         best = item;
                     }
-                    0;
                 }
-                0;
             }
 
             iter = item.next;
@@ -370,13 +366,8 @@ fun do_best_sizes(list: LinkedList) {
                     if size > best_sizes[2] {
                         best_sizes[2] = size;
                     }
-
-                    0;
                 }
-
-                0;
             }
-            0;
         }
 
         iter = item.next;
@@ -454,13 +445,9 @@ fun init() {
 
         progress = progress + 1;
         if progress >= 10 {
-            print("progress: ", i);
+            //print("progress: ", i);
             progress = progress - 10;
         }
-
-        0;
-
-        
     }
 
     do_best_sizes(list);

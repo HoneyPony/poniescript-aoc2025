@@ -274,8 +274,6 @@ class Text {
                 nums[i] = next.0;
             }
             else { return nil; }
-
-            0;
         };
 
         new Box {
@@ -323,11 +321,7 @@ fun find_best(list: LinkedList) -> Connect {
                     if best.dist > itemc.dist {
                         best = itemc;
                     }
-
-                    0;
                 }
-
-                0;
             }
 
             iterc = itemc.next;
@@ -424,8 +418,6 @@ fun init() {
             print("progress: ", i);
             progress = progress - 100;
         }
-
-        0; //?
         //print(best.first.pos, " ", best.second.pos, " ", best.used);
 
         if did_the_thing(list) {
@@ -433,7 +425,6 @@ fun init() {
             print(best.first.pos.0 * best.second.pos.0);
             return;
         }
-        0;
     }
 
     //print("then");

@@ -164,7 +164,6 @@ fun do_it() {
                 if (num1s.length / divider) * divider != num1s.length {
                     actually = false;
                 }
-                0;
             }
 
             if actually {
@@ -183,14 +182,10 @@ fun do_it() {
                             sum = sum + candidate;
                             count = count + 1;
                         }
-                        0;
                     }
 
                     check = check + 1;
                 };
-
-                
-                0;
            }
            divider = divider + 1;
         }

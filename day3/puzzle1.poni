@@ -26,11 +26,7 @@ fun init() {
                 if candidates.0 > best.0 {
                     best.0 = candidates.0;
                 }
-
-                0;
             }
-
-            0;
         }
         else {
             //print("best: ", best.1, best.0);
