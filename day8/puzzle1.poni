@@ -52,7 +52,6 @@ class Box {
     fun compute_graph_size() -> int {
         visited = true;
 
-        //print(pos);
         var size_ = 1;
 
         var iter = connected.head;
@@ -81,8 +80,6 @@ class Box {
             iter = item.next3;
         }
 
-        //print("id ", id, " has ", connections);
-
         size_
     }
 
@@ -95,19 +92,12 @@ class Box {
         if not_(has_size()) {
             size = size_;
             var iter = connected.head;
-            //var nr = 1;
 
             loop {
                 var item = iter else { break; };
 
-                //print("size: ", size_.size, " set: ", nr);
-                //nr = nr + 1;
-
                 var other = get_other(item);
                 other._set_graph(size_);
-
-                //print("id ", item.first.id, " ", size_.size);
-                //print("id ", item.second.id, " ", size_.size);
 
                 iter = item.next2;
             }
@@ -209,37 +199,6 @@ class ConnectList {
         tail_.next3 = node;
         tail = node;
     }
-
-    // Inserts the new node when it has a good distance.
-    fun insert_after(node: Connect) {
-        var head_ = head else {
-            head = node;
-            tail = node;
-            return;
-        };
-
-        if node.dist < head_.dist {
-            node.next = head_;
-            head = node;
-            return;
-        }
-
-        var before = head_;
-        var iter = head_.next;
-        loop {
-            var next = iter else { break; };
-            // This is the right position.
-            if node.dist < next.dist {
-                break;
-            }
-
-            before = next;
-            iter = next.next;
-        }
-
-        node.next = before.next;
-        before.next = node;
-    }
 }
 
 class Text {
@@ -259,7 +218,6 @@ class Text {
 
         while idx < text.length and is_not_digit(text[idx]) { idx = idx + 1; };
 
-        //print(x, got);
         (x, got)
     }
 
@@ -344,11 +302,9 @@ fun do_best_sizes(list: LinkedList) {
         var item = iter else { break; };
 
         var size = item.get_graph_size();
-        //print("size: ", size.size);
         if not_(size.used) {
             size.used = true;
             var size = size.size;
-            //print("graph size: ", size);
 
             if size > best_sizes[0] {
                 best_sizes[2] = best_sizes[1];
@@ -392,10 +348,8 @@ fun init() {
     }
 
     var iter = list.head;
-    var n_connects = 0;
     var small = new ConnectList{};
     var big = new ConnectList{};
-    var smlen = 0;
     loop {
         var item = iter else { break; };
         
@@ -415,13 +369,10 @@ fun init() {
 
             if dist < (10000 * 10000 * 3) {
                 small.push(connect);
-                smlen = smlen + 1;
             }
             else {
                 big.push(connect);
             }
-            
-            n_connects = n_connects + 1;
 
             inner = inner_item.next;
         }
@@ -429,23 +380,17 @@ fun init() {
         iter = item.next;
     }
 
-    print("smlen: ", smlen);
-
     var progress = 0;
 
     for i in 0..1000 {
         var best = find_best(small, big);
-
-        //print("new connection: ", best.first.id, " ", best.second.id);
-
-        //print("connect: ", best.dist);
 
         best.first.connected.push2(best);
         best.second.connected2.push3(best);
 
         progress = progress + 1;
         if progress >= 10 {
-            //print("progress: ", i);
+            print("progress: ", i);
             progress = progress - 10;
         }
     }
@@ -453,6 +398,4 @@ fun init() {
     do_best_sizes(list);
 
     print("then");
-
-    //print(best.first.pos, " ", best.second.pos);
 }
