@@ -148,7 +148,7 @@ class Connect {
     var first: Box = new Box{};
     var second: Box = new Box{};
     var first_id: int = 0;
-    var dist: float = 0;
+    var dist: int = 0;
 
     // Whether this connect has been used as a connection.
     var used: bool = false;
@@ -435,23 +435,11 @@ fun do_best_sizes(list: LinkedList) {
     print(best_sizes[0] * best_sizes[1] * best_sizes[2]);
 }
 
-fun init() {
-    var text = read_text();
-
-    var list = new LinkedList{};
-    var id = 1;
-    loop {
-        var box = text.box() else { break; };
-        box.id = id;
-        id = id + 1;
-        list.push(box);
-    }
-
-    var iter = list.head;
-    // var small = new ConnectList{};
-    // var big = new ConnectList{};
+fun build_list_of_all_edges_with_dummy(boxes: LinkedList) -> ConnectList {
     var all = new ConnectList{};
     all.push(new Connect{}); // dummy node
+
+    var iter = boxes.head;
     loop {
         var item = iter else { break; };
         
@@ -471,9 +459,9 @@ fun init() {
 
             // This is not really a legit optimization, but it does help
             // a lot.
-            if connect.dist < 10000 * 10000 * 3 {
+            //if connect.dist < 10000 * 10000 * 3 {
                 all.push(connect);
-            }
+            //}
 
             inner = inner_item.next;
         }
@@ -481,18 +469,27 @@ fun init() {
         iter = item.next;
     }
 
+    all
+}
+
+fun init() {
+    print("start");
+    var text = read_text();
+
+    var list = new LinkedList{};
+    var id = 1;
+    loop {
+        var box = text.box() else { break; };
+        box.id = id;
+        id = id + 1;
+        list.push(box);
+    }
+
+    var all = build_list_of_all_edges_with_dummy(list);
+    print("built list");
+
     all.sort_with_dummy_node();
-
-    // var iter = all.head;
-    // loop {
-    //     var item = iter else { break; };
-    //     print("sorted: ", item.dist);
-    //     iter = item.next;
-    // }
-
-    // return;
-
-    var progress = 0;
+    print("sorted list");
 
     var best = all.head;
     var best = best else { print("no best?"); return; };
@@ -500,12 +497,6 @@ fun init() {
     for i in 0..1000 {
         best.first.connected.push2(best);
         best.second.connected2.push3(best);
-
-        progress = progress + 1;
-        if progress >= 10 {
-            print("progress: ", i);
-            progress = progress - 10;
-        }
 
         best = best.next else { print("ran out of nodes"); break; };
     }
