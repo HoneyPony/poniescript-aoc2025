@@ -36,6 +36,8 @@ class Box {
 
         var iter = connected.head;
 
+        var connections = 0;
+
         loop {
             var item = iter else { break; };
 
@@ -50,16 +52,21 @@ class Box {
                 //size_ = size_ + get_other(item).compute_graph_size();
             //}
 
+            connections = connections + 1;
+
             iter = item.next2;
         }
+
+        //print("id ", id, " has ", connections);
 
         size_
     }
 
     fun get_graph_size() -> int {
         var existing = size else {
-            print("--- begin circuit ---");
+            //print("--- begin circuit ---");
             var size_ = compute_graph_size();
+            //print("got ", size_);
             var size_ = new GraphSize { size: size_ };
             
             // cache this.
@@ -71,7 +78,10 @@ class Box {
                 item.first.size = size_;
                 item.second.size = size_;
 
-                iter = item.next;
+                //print("id ", item.first.id, " ", size_.size);
+                //print("id ", item.second.id, " ", size_.size);
+
+                iter = item.next2;
             }
 
             return size_.size;
