@@ -24,10 +24,31 @@ class Box {
 
     var can_connect: ConnectList = new ConnectList{};
     var connected: ConnectList = new ConnectList{};
+    var connected2: ConnectList = new ConnectList{};
 
     var size: GraphSize? = nil;
 
     var visited: bool = false;
+    var p_visited: bool = false;
+
+    fun print_graph() -> StrBuf {
+        if p_visited { return ""; }
+        p_visited = true;
+
+        var s = str(id, " ");
+        var iter = connected.head;
+
+        loop {
+            var item = iter else { break; };
+
+            var other = get_other(item);
+            s = str(s, other.print_graph());
+
+            iter = item.next2;
+        }
+
+        s
+    }
 
     fun compute_graph_size() -> int {
         visited = true;
@@ -37,25 +58,28 @@ class Box {
 
         var iter = connected.head;
 
-        var connections = 0;
+        loop {
+            var item = iter else { break; };
+
+            var other = get_other(item);
+            if not_(other.visited) {
+                size_ = size_ + other.compute_graph_size();
+            }
+
+            iter = item.next2;
+        }
+
+        var iter = connected2.head;
 
         loop {
             var item = iter else { break; };
 
             var other = get_other(item);
             if not_(other.visited) {
-                //size_ = size_ + 1;
                 size_ = size_ + other.compute_graph_size();
             }
-            //if not_(item.visited) {
-            //    item.visited = true;
-                //size_ = size_ + 1;
-                //size_ = size_ + get_other(item).compute_graph_size();
-            //}
 
-            connections = connections + 1;
-
-            iter = item.next2;
+            iter = item.next3;
         }
 
         //print("id ", id, " has ", connections);
@@ -109,7 +133,7 @@ class Box {
     }
 
     fun get_other(connect: Connect) -> Box {
-        if connect.first_id == id { connect.second } else { connect.first }
+        if connect.first.id == id { connect.second } else { connect.first }
     }
 
     // Linked list
@@ -148,6 +172,9 @@ class Connect {
     
     // Other linked list
     var next2: Connect? = nil;
+
+    // Other other linked list...?
+    var next3: Connect? = nil;
 }
 
 class ConnectList {
@@ -171,6 +198,16 @@ class ConnectList {
             return;
         };
         tail_.next2 = node;
+        tail = node;
+    }
+
+    fun push3(node: Connect) {
+        var tail_ = tail else {
+            head = node;
+            tail = node;
+            return;
+        };
+        tail_.next3 = node;
         tail = node;
     }
 
@@ -275,7 +312,7 @@ fun find_best(list: LinkedList) -> Connect {
                 }
 
                 nr_touched = nr_touched + 1;
-                if best.used and not_(itemc.used) {
+                if best.used {
                     //print("best: ", best.first.pos, best.second.pos, " vs: ", itemc.first.pos, itemc.second.pos);
                     best = itemc;
                     //print("best is now", best.first.pos, best.second.pos);
@@ -306,6 +343,65 @@ fun find_best(list: LinkedList) -> Connect {
     //print("want to return: ", best.first.pos, best.second.pos);
 
     best
+}
+
+fun do_best_sizes(list: LinkedList) {
+    var iter = list.head;
+    loop {
+        var item = iter else { break; };
+        // Reset all sizes.
+        item.visited = false;
+        item.p_visited = false;
+        item.size = nil;
+
+        iter = item.next;
+    }
+
+    var best_sizes = [0, 0, 0];
+    var best = list.head else { return; };
+    var iter = list.head;
+    loop {
+        var item = iter else { break; };
+
+        var size = item.get_graph_size();
+        //print("size: ", size.size);
+        if not_(size.used) {
+            size.used = true;
+            var size = size.size;
+            //print("graph size: ", size);
+
+            if size > best_sizes[0] {
+                best_sizes[2] = best_sizes[1];
+                best_sizes[1] = best_sizes[0];
+                best_sizes[0] = size;
+
+                best = item;
+            }
+            else {
+                if size > best_sizes[1] {
+                    best_sizes[2] = best_sizes[1];
+                    best_sizes[1] = size;
+                }
+                else {
+                    if size > best_sizes[2] {
+                        best_sizes[2] = size;
+                    }
+
+                    0;
+                }
+
+                0;
+            }
+            0;
+        }
+
+        iter = item.next;
+    }
+
+    print(best.print_graph());
+
+    print(best_sizes[0], " ", best_sizes[1], " ", best_sizes[2]);
+    print(best_sizes[0] * best_sizes[1] * best_sizes[2]);
 }
 
 fun init() {
@@ -355,8 +451,12 @@ fun init() {
     for i in 0..1000 {
         var best = find_best(list);
 
+        print("new connection: ", best.first.id, " ", best.second.id);
+
+        //print("connect: ", best.dist);
+
         best.first.connected.push2(best);
-        best.second.connected.push2(best);
+        best.second.connected2.push3(best);
 
         progress = progress + 1;
         if progress >= 10 {
@@ -366,49 +466,11 @@ fun init() {
 
         0; //?
         //print(best.first.pos, " ", best.second.pos, " ", best.used);
+
+        do_best_sizes(list);
     }
 
     print("then");
 
-    var best_sizes = [0, 0, 0];
-    var iter = list.head;
-    loop {
-        var item = iter else { break; };
-
-        var size = item.get_graph_size();
-        print("size: ", size.size);
-        if not_(size.used) {
-            size.used = true;
-            var size = size.size;
-            //print("graph size: ", size);
-
-            if size > best_sizes[0] {
-                best_sizes[2] = best_sizes[1];
-                best_sizes[1] = best_sizes[0];
-                best_sizes[0] = size;
-            }
-            else {
-                if size > best_sizes[1] {
-                    best_sizes[2] = best_sizes[1];
-                    best_sizes[1] = size;
-                }
-                else {
-                    if size > best_sizes[2] {
-                        best_sizes[2] = size;
-                    }
-
-                    0;
-                }
-
-                0;
-            }
-            0;
-        }
-
-        iter = item.next;
-    }
-
-    print(best_sizes[0], " ", best_sizes[1], " ", best_sizes[2]);
-    print(best_sizes[0] * best_sizes[1] * best_sizes[2]);
     //print(best.first.pos, " ", best.second.pos);
 }
