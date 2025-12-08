@@ -1,0 +1,95 @@
+var ZERO    = "0"[0];
+var NINE    = "9"[0];
+var SPACE   = " "[0];
+var NEWLINE = "\n"[0];
+var PLUS    = "+"[0];
+var STAR    = "*"[0];
+
+fun is_digit(c: int) -> bool {
+    c >= ZERO and c <= NINE
+}
+
+fun is_not_digit(c: int) -> bool {
+    c < ZERO or c > NINE
+}
+
+class Box {
+    var pos: vec3 = (0, 0, 0);
+
+    // Linked list
+    var next: Box? = nil;
+}
+
+class LinkedList {
+    var head: Box? = nil;
+    var tail: Box? = nil;
+
+    fun push(node: Box) {
+        var tail_ = tail else {
+            head = node;
+            tail = node;
+            return;
+        };
+        tail_.next = node;
+        tail = node;
+    }
+}
+
+class Text {
+    var text: StrBuf = "";
+    var idx = 0;
+
+    fun number() -> (int, bool) {
+        var x = 0;
+        var got = false;
+
+        while idx < text.length and is_digit(text[idx]) {
+            x = (x * 10 + text[idx] - ZERO);
+            got = true;
+
+            idx = idx + 1;
+        };
+
+        while idx < text.length and is_not_digit(text[idx]) { idx = idx + 1; }
+
+        print(x, got);
+        (x, got)
+    }
+
+    fun box() -> Box? {
+        var nums = [0.0, 0.0, 0.0];
+        for i in 0..nums.length {
+            var next = number();
+            if next.1 {
+                nums[i] = next.0;
+            }
+            else { return nil; }
+
+            0;
+        };
+
+        new Box {
+            pos: (nums[0], nums[1], nums[2])
+        }
+    }
+}
+
+fun read_text() -> Text { new Text { text: read_file("input.txt") } }
+
+fun init() {
+    var text = read_text();
+
+    var list = new LinkedList{};
+    loop {
+        var box = text.box() else { break; };
+        list.push(box);
+    }
+
+    var iter = list.head;
+    loop {
+        var item = iter else { break; };
+        print(item.pos);
+
+        iter = item.next;
+    }
+}

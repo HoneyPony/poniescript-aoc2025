@@ -1,0 +1,9 @@
+class Text {
+    var text: StrBuf = "";
+}
+
+fun read_text() -> Text { new Text { text: read_file("input.txt") } }
+
+fun init() {
+    var text = read_text();
+}
