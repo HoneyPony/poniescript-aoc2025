@@ -22,7 +22,6 @@ class Box {
     var id: int = 0;
     var pos: vec3 = (0, 0, 0);
 
-    var can_connect: ConnectList = new ConnectList{};
     var connected: ConnectList = new ConnectList{};
     var connected2: ConnectList = new ConnectList{};
 
@@ -288,59 +287,32 @@ fun not_(b: bool) -> bool {
     if b { false } else { true }
 }
 
-fun find_best(list: LinkedList) -> Connect {
-    // Now this is sad.
+fun find_best(list: ConnectList) -> Connect {
     var iter = list.head;
-    var first = iter else { return new Connect{}; };
-    var best = first.can_connect.head;
+    var best = list.head;
     var best = best else { return new Connect{}; };
-
-    //print(best.first.pos, " ", best.second.pos);
-    var nr_touched = 0;
-    var nr_touched_unused = 0;
 
     loop {
         var item = iter else { break; };
 
-        var iterc = item.can_connect.head;
-        loop {
-            var itemc = iterc else { break; };
-
-            if not_(itemc.used) {
-                if not_(itemc.used) {
-                    nr_touched_unused = nr_touched_unused + 1;
+        if not_(item.used) {
+            if best.used {
+                best = item;
+            }
+            else {
+                if best.dist > item.dist {
+                    best = item;
                 }
-
-                nr_touched = nr_touched + 1;
-                if best.used {
-                    //print("best: ", best.first.pos, best.second.pos, " vs: ", itemc.first.pos, itemc.second.pos);
-                    best = itemc;
-                    //print("best is now", best.first.pos, best.second.pos);
-                }
-                else {
-                    if best.dist > itemc.dist {
-                        best = itemc;
-                    }
-
-                    0;
-                }
-
                 0;
             }
-
-            iterc = itemc.next;
+            0;
         }
 
         iter = item.next;
-        //print("meow: ", item.pos);
     }
-
-    //print("nr_touched: ", nr_touched, " (unused): ", nr_touched_unused, " was used: ", best.used);
 
     // We used this one.
     best.used = true;
-
-    //print("want to return: ", best.first.pos, best.second.pos);
 
     best
 }
@@ -418,6 +390,7 @@ fun init() {
 
     var iter = list.head;
     var n_connects = 0;
+    var in_order: ConnectList = new ConnectList{};
     loop {
         var item = iter else { break; };
         
@@ -434,7 +407,7 @@ fun init() {
                 dist: (dist.0 * dist.0 + dist.1 * dist.1 + dist.2 * dist.2)
             };
 
-            item.can_connect.push(connect);
+            in_order.push(connect);
 
             n_connects = n_connects + 1;
 
@@ -449,9 +422,9 @@ fun init() {
     var progress = 0;
 
     for i in 0..1000 {
-        var best = find_best(list);
+        var best = find_best(in_order);
 
-        print("new connection: ", best.first.id, " ", best.second.id);
+        //print("new connection: ", best.first.id, " ", best.second.id);
 
         //print("connect: ", best.dist);
 
@@ -464,11 +437,12 @@ fun init() {
             progress = progress - 10;
         }
 
-        0; //?
-        //print(best.first.pos, " ", best.second.pos, " ", best.used);
+        0;
 
-        do_best_sizes(list);
+        
     }
+
+    do_best_sizes(list);
 
     print("then");
 
