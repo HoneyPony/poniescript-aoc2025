@@ -151,7 +151,9 @@ fun init() {
                     var us = u.1 + sign(p.1 - u.1);
                     var us_full = (us >= low.1 and us <= high.1);
 
-                    if ((p_full and ps_full) or (u_full and us_full) or (p_part and u_part)) {
+                    var smile = (p.1 < low.1 and u.1 > high.1) and (u.1 < low.1 and p.1 > high.1);
+
+                    if ((p_full and ps_full) or (u_full and us_full) or (p_part and u_part) or smile) {
                         if not_(ok) {
                             //print("bad y: ", p, " ", u);
                             return true;
@@ -173,7 +175,9 @@ fun init() {
                     var us = u.0 + sign(p.0 - u.0);
                     var us_full = (us >= low.0 and us <= high.0);
 
-                    if ((p_full and ps_full) or (u_full and us_full) or (p_part and u_part)) {
+                    var smile = (p.0 < low.0 and u.0 > high.0) and (u.0 < low.0 and p.0 > high.0);
+
+                    if ((p_full and ps_full) or (u_full and us_full) or (p_part and u_part) or smile) {
                         if not_(ok) {
                             //print("bad x: ", p, " ", u);
                             return true;
@@ -203,7 +207,7 @@ fun init() {
             //     compat(dir.0, check.0) and compat(dir.1, check.1)
             // }
 
-            // fun compat3(point: vec2i, dir: (vec2i, int), check: vec2i, flag: int) -> bool {
+            // fun compat3(dir: (vec2i, int), check: vec2i, flag: int) -> bool {
             //     if dir.1 == flag {
             //         compat2(dir.0, check)
             //     }
@@ -239,12 +243,12 @@ fun init() {
 
             // var dir_a_to_b = bp - ap;
             // var dir_b_to_a = ap - bp;
-            //var valid = compat(dirs[i], dir_a_to_b, winding) and compat(dirs[j], dir_b_to_a, winding);//compat2(dirs[i], dir_a_to_b) and compat2(dirs[i], dir_b_to_a);
+            // var valid = compat3(dirs[i], dir_a_to_b, winding) and compat3(dirs[j], dir_b_to_a, winding);//compat2(dirs[i], dir_a_to_b) and compat2(dirs[i], dir_b_to_a);
             //print(valid);
 
             // as per input-me3, positive winding is correct...?
             var valid = compat(ap, bp, dirs[i], winding)
-                and compat(bp, ap, dirs[j], winding);
+                 and compat(bp, ap, dirs[j], winding);
             
             if valid {
                 var area = (abs(ap.0 - bp.0) + 1) * (abs(ap.1 - bp.1) + 1);
