@@ -118,7 +118,7 @@ fun init() {
     fun min(a: int, b: int) -> int { if a < b { a } else { b } }
     fun max(a: int, b: int) -> int { if a > b { a } else { b } }
 
-    fun contains_any_other_point(a: vec2i, b: vec2i, points: DynArray[vec2i]) -> bool {
+    fun is_good_v2(a: vec2i, b: vec2i, points: DynArray[vec2i]) -> bool {
         //print("candidate: ", a, " ", b);
         var low  = (min(a.0, b.0), min(a.1, b.1));
         var high = (max(a.0, b.0), max(a.1, b.1));
@@ -139,55 +139,42 @@ fun init() {
             var ok = same(p, a) or same(u, a) or same(p, b) or same(u, b);
 
             if p.0 == u.0 {
+                // Vertical line. It is bad if the X position is
+                // strictly inside, and either Y position is strictly inside,
+                // OR both y positions are outside.
                 if p.0 > low.0 and p.0 < high.0 {
-                    var p_full = (p.1 >= low.1 and p.1 <= high.1);
-                    var p_part = (p.1 > low.1 and p.1 < high.1);
-                    var u_full = (u.1 >= low.1 and u.1 <= high.1);
-                    var u_part = (u.1 > low.1 and u.1 < high.1);
+                    var p_strict = (p.1 > low.1 and p.1 < high.1);
+                    var u_strict = (u.1 > low.1 and u.1 < high.1);
 
-                    var ps = p.1 + sign(u.1 - p.1);
-                    var ps_full = (ps >= low.1 and ps <= high.1);
+                    var pu_min = min(u.1, p.1);
+                    var pu_max = max(u.1, p.1);
 
-                    var us = u.1 + sign(p.1 - u.1);
-                    var us_full = (us >= low.1 and us <= high.1);
+                    var span = (pu_min <= low.1 and pu_max >= high.1);
 
-                    var smile = (p.1 < low.1 and u.1 > high.1) and (u.1 < low.1 and p.1 > high.1);
-
-                    if ((p_full and ps_full) or (u_full and us_full) or (p_part and u_part) or smile) {
-                        if not_(ok) {
-                            //print("bad y: ", p, " ", u);
-                            return true;
-                        }
+                    if (p_strict or u_strict or span) {
+                        return false;
                     }
                 }
             }
 
             if p.1 == u.1 {
                 if p.1 > low.1 and p.1 < high.1 {
-                    var p_full = (p.1 >= low.0 and p.1 <= high.0);
-                    var p_part = (p.1 > low.0 and p.1 < high.0);
-                    var u_full = (u.1 >= low.0 and u.1 <= high.0);
-                    var u_part = (u.1 > low.0 and u.1 < high.0);
+                    var p_strict = (p.0 > low.0 and p.0 < high.0);
+                    var u_strict = (u.0 > low.0 and u.0 < high.0);
 
-                   var ps = p.0 + sign(u.0 - p.0);
-                    var ps_full = (ps >= low.0 and ps <= high.0);
+                    var pu_min = min(u.0, p.0);
+                    var pu_max = max(u.0, p.0);
 
-                    var us = u.0 + sign(p.0 - u.0);
-                    var us_full = (us >= low.0 and us <= high.0);
+                    var span = (pu_min <= low.0 and pu_max >= high.0);
 
-                    var smile = (p.0 < low.0 and u.0 > high.0) and (u.0 < low.0 and p.0 > high.0);
-
-                    if ((p_full and ps_full) or (u_full and us_full) or (p_part and u_part) or smile) {
-                        if not_(ok) {
-                            //print("bad x: ", p, " ", u);
-                            return true;
-                        }
+                    if (p_strict or u_strict or span) {
+                        return false;
                     }
                 }
             }
         }
 
-        false
+        true
     }
 
     fun is_good(a: vec2i, b: vec2i, points: DynArray[vec2i]) -> bool {
@@ -284,7 +271,7 @@ fun init() {
                 if area > best {
                     //print("will try: ", ap, " ", bp);
                     // Now check the expensive one.
-                    if is_good(ap, bp, points) {
+                    if is_good_v2(ap, bp, points) {
                         print("new best: ", ap, " ", bp);
                         best = area;
                     }
