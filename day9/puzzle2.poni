@@ -38,7 +38,7 @@ class Text {
     }
 }
 
-fun get_text() -> Text { new Text { text: read_file("input.txt") } }
+fun get_text() -> Text { new Text { text: read_file("input-me4.txt") } }
 
 fun not_(x: bool) -> bool { if x { false } else { true } }
 
