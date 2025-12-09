@@ -38,7 +38,7 @@ class Text {
     }
 }
 
-fun get_text() -> Text { new Text { text: read_file("input.txt") } }
+fun get_text() -> Text { new Text { text: read_file("input-me3.txt") } }
 
 fun not_(x: bool) -> bool { if x { false } else { true } }
 
@@ -72,13 +72,54 @@ fun init() {
     fun min(a: int, b: int) -> int { if a < b { a } else { b } }
     fun max(a: int, b: int) -> int { if a > b { a } else { b } }
 
-    fun is_good(a: vec2i, b: vec2i, points: DynArray[vec2i]) -> bool {
-        var low = (min(a.0, b.0), min(a.1, b.1));
-        var high = (max(a.0, b.0), max(a.1, b.1));
-        for i in 0..points.length {
-            var p = points[i];
-            if p.0 > low.0 and p.0 < high.0 and p.1 > low.1 and p.1 < high.1 {
+    fun edge_overlaps(a: (vec2i, vec2i), b: (vec2i, vec2i)) -> bool {
+        if a.0.0 == a.1.0 {
+            if b.0.0 == b.1.0 {
                 return false;
+            }
+
+            // a is vertical, b is horizontal
+            var low_y = min(a.0.1, a.1.1);
+            var high_y = max(a.0.1, a.1.1);
+
+            var low_x = min(b.0.0, b.1.0);
+            var high_x = max(b.0.0, b.1.0);
+            
+            return a.0.0 > low_x and a.0.0 < high_x and b.0.1 > low_y and b.0.1 < high_y;
+        }
+        else {
+            if b.0.1 == b.1.1 {
+                return false;
+            }
+
+            var low_y = min(b.0.1, b.1.1);
+            var high_y = max(b.0.1, b.1.1);
+
+            var low_x = min(a.0.0, a.1.0);
+            var high_x = max(a.0.0, a.1.0);
+            
+            return b.0.0 > low_x and b.0.0 < high_x and a.0.1 > low_y and a.0.1 < high_y;
+        }
+    }
+
+    fun is_good(a: vec2i, b: vec2i, points: DynArray[vec2i]) -> bool {
+        var edges = [
+            ((a.0, a.1), (a.0, b.1)),
+            ((a.0, b.1), (b.0, b.1)),
+            ((b.0, b.1), (b.0, a.1)),
+            ((b.0, a.1), (a.0, a.1))
+        ];
+
+        for i in 0..points.length {
+            var next = i + 1;
+            if next >= points.length { next = next - points.length; }
+
+            var edge = (points[i], points[next]);
+            for j in 0..edges.length {
+                var o = edge_overlaps(edge, edges[j]);
+                if o {
+                    return false;
+                }
             }
         }
 
