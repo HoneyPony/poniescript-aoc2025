@@ -38,7 +38,7 @@ class Text {
     }
 }
 
-fun get_text() -> Text { new Text { text: read_file("input.txt") } }
+fun get_text() -> Text { new Text { text: read_file("input-me.txt") } }
 
 fun init() {
     var points: DynArray[vec2i] = [];
@@ -93,7 +93,7 @@ fun init() {
         var rot = rotation(back, forth);
         winding = winding + rot;
 
-        var dir = sign2(points[prev] - points[i]) + forth;
+        var dir = (points[prev] - points[i]) + (points[next] - points[i]);
 
         //var dir = sign2(points[prev] - points[i]) + sign2(points[next] - points[i]);
         // This doesn't work :(
@@ -113,42 +113,105 @@ fun init() {
 
     winding = sign(winding);
 
+    fun min(a: int, b: int) -> int { if a < b { a } else { b } }
+    fun max(a: int, b: int) -> int { if a > b { a } else { b } }
+
+    fun contains_any_other_point(a: vec2i, b: vec2i, points: DynArray[vec2i]) -> bool {
+        var low  = (min(a.0, b.0), min(a.1, b.1));
+        var high = (max(a.0, b.0), max(a.1, b.1));
+
+        //print(low, high);
+
+        for i in 0..points.length {
+            var point = points[i];
+            var next = i + 1;
+            if next >= points.length { next = next - points.length; }
+
+            var p: vec2 = points[i];
+            var u: vec2 = points[next];
+
+            var point = ((p.0 + u.0 / 2), (p.1 + u.1) / 2);
+
+            if point.0 > low.0 and point.0 < high.0 and point.1 > low.1 and point.1 < high.1 {
+                return true;
+                // // Make sure it isn't *literally* the same point.
+                // if point.0 != a.0 or point.0 != b.0 or point.1 != a.1 or point.1 != b.1 {
+                //     return true;
+                // }
+            }
+        }
+
+        false
+    }
+
+    fun not_(x: bool) -> bool { if x { false } else { true } }
+
     for i in 0..points.length {
         for j in i + 1..points.length {
             var ap = points[i];
             var bp = points[j];
 
-            fun compat(dir: int, check: int) -> bool {
-                // No opinion.
-                if dir == 0 { return true; }
-                return sign(dir) == sign(check);
+            // fun compat(dir: int, check: int) -> bool {
+            //     // No opinion.
+            //     if dir == 0 { return true; }
+            //     return sign(dir) == sign(check);
+            // }
+
+            // fun compat2(dir: vec2i, check: vec2i) -> bool {
+            //     compat(dir.0, check.0) and compat(dir.1, check.1)
+            // }
+
+            // fun compat3(point: vec2i, dir: (vec2i, int), check: vec2i, flag: int) -> bool {
+            //     if dir.1 == flag {
+            //         compat2(dir.0, check)
+            //     }
+            //     else {
+            //         compat2((-dir.0.0, -dir.0.1), check) and
+            //             compat2(( dir.0.1, -dir.0.0), check) and
+            //             compat2((-dir.0.1,  dir.0.0), check)
+            //     }
+            // }
+
+            fun signmatch2(a: vec2i, b: vec2i) -> bool {
+                sign(a.0) == sign(b.0) and sign(a.1) == sign(b.1)
             }
 
-            fun compat2(dir: vec2i, check: vec2i) -> bool {
-                compat(dir.0, check.0) and compat(dir.1, check.1)
+            fun funny_predicate(x: int, dir: int) -> bool {
+                x == 0 or (sign(x) == -sign(dir))
             }
 
-            fun compat3(dir: (vec2i, int), check: vec2i, flag: int) -> bool {
+            fun other_predicate(x: int, dir: int) -> bool {
+                x == 0 or sign(x) == sign(dir)
+            }
+
+            fun compat(point: vec2i, to: vec2i, dir: (vec2i, int), flag: int) -> bool {
                 if dir.1 == flag {
-                    compat2(dir.0, check)
+                    var vec = to - point;
+                    return signmatch2(vec, dir.0);
                 }
-                else {
-                    compat2((-dir.0.0, -dir.0.1), check) and
-                        compat2(( dir.0.1, -dir.0.0), check) and
-                        compat2((-dir.0.1,  dir.0.0), check)
-                }
+                var v = to - (point + dir.0);
+                var u = to - point;
+                return (funny_predicate(v.0, dir.0.0) and other_predicate(u.1, dir.0.1)) or
+                    (other_predicate(u.0, dir.0.0) and funny_predicate(v.1, dir.0.1));
             }
 
-            var dir_a_to_b = bp - ap;
-            var dir_b_to_a = ap - bp;
-            var valid = compat3(dirs[i], dir_a_to_b, -winding) and compat3(dirs[j], dir_b_to_a, -winding);//compat2(dirs[i], dir_a_to_b) and compat2(dirs[i], dir_b_to_a);
-            print(valid);
+            // var dir_a_to_b = bp - ap;
+            // var dir_b_to_a = ap - bp;
+            //var valid = compat(dirs[i], dir_a_to_b, winding) and compat(dirs[j], dir_b_to_a, winding);//compat2(dirs[i], dir_a_to_b) and compat2(dirs[i], dir_b_to_a);
+            //print(valid);
+
+            var valid = compat(ap, bp, dirs[i], winding)
+                and compat(bp, ap, dirs[j], winding);
             
             if valid {
                 var area = (abs(ap.0 - bp.0) + 1) * (abs(ap.1 - bp.1) + 1);
                 //print(a, " ", b, " => ", area);
                 if area > best {
-                    best = area;
+                    // Now check the expensive one.
+                    if not_(contains_any_other_point(ap, bp, points)) {
+                        print("new best: ", ap, " ", bp);
+                        best = area;
+                    }
                 }
             }
         }
