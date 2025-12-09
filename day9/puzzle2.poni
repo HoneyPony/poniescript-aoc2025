@@ -278,7 +278,7 @@ fun init() {
             var valid = compat(ap, bp, dirs[i], winding)
                  and compat(bp, ap, dirs[j], winding);
             
-            //if valid {
+            if valid {
                 var area = (abs(ap.0 - bp.0) + 1) * (abs(ap.1 - bp.1) + 1);
                 //print(a, " ", b, " => ", area);
                 if area > best {
@@ -289,9 +289,9 @@ fun init() {
                         best = area;
                     }
                 }
-            //}
+            }
         }
-        print("complete: ", i);
+        //print("complete: ", i);
     }
 
     print(best);
