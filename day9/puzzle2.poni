@@ -114,7 +114,7 @@ fun init() {
     fun min(a: int, b: int) -> int { if a < b { a } else { b } }
     fun max(a: int, b: int) -> int { if a > b { a } else { b } }
 
-    fun is_good_v2(a: vec2i, b: vec2i, points: DynArray[vec2i]) -> bool {
+    fun is_good(a: vec2i, b: vec2i, points: DynArray[vec2i]) -> bool {
         var low  = (min(a.0, b.0), min(a.1, b.1));
         var high = (max(a.0, b.0), max(a.1, b.1));
 
@@ -206,7 +206,7 @@ fun init() {
                 var area = (abs(ap.0 - bp.0) + 1) * (abs(ap.1 - bp.1) + 1);
                 if area > best {
                     // Now check the expensive one.
-                    if is_good_v2(ap, bp, points) {
+                    if is_good(ap, bp, points) {
                         print("new best: ", ap, " ", bp);
                         best = area;
                     }
