@@ -42,7 +42,7 @@ fun get_text() -> Text { new Text { text: read_file("input.txt") } }
 
 fun init() {
     var points: DynArray[vec2i] = [];
-    var dirs: DynArray[vec2i] = [];
+    var dirs: DynArray[(vec2i, int)] = [];
     //var pairs: DynArray[(vec2i, vec2i)] = [];
     var text = get_text();
 
@@ -63,25 +63,55 @@ fun init() {
         (sign(x.0), sign(x.1))
     }
 
+    fun rotation(prev: vec2i, next: vec2i) -> int{
+        if prev.0 == next.0 and prev.1 == next.1 {
+            return 0;
+        }
+        // Parse sadness: This == is parsed wrong without the ()
+        if (prev.0 == -next.1) and prev.1 == next.0 {
+            return 1;
+        }
+        if prev.0 == next.1 and prev.1 == -next.0 {
+            return -1;
+        }
+        /// This is bad.
+        print("uh oh");
+        return 0;
+    }
+
+    var winding: int = 0;
+
     for i in 0..points.length {
         var prev = i - 1;
         if prev < 0 { prev = prev + points.length; }
         var next = i + 1;
         if next >= points.length { next = next - points.length; }
 
-        var dir = sign2(points[prev] - points[i]) + sign2(points[next] - points[i]);
+        var back = sign2(points[i] - points[prev]);
+        var forth = sign2(points[next] - points[i]);
+
+        var rot = rotation(back, forth);
+        winding = winding + rot;
+
+        var dir = sign2(points[prev] - points[i]) + forth;
+
+        //var dir = sign2(points[prev] - points[i]) + sign2(points[next] - points[i]);
         // This doesn't work :(
         //points[i].1 = dir;
-        dirs.push(dir);
+        dirs.push((dir, rot));
 
-        print(dir, " ", dirs[i]);
+        //print(dir, " ", dirs[i]);
+        //print(winding);
     }
+    print(winding);
 
     fun abs(x: int) -> int {
         if x < 0 { -x } else { x } 
     }
 
     var best = 0;
+
+    winding = sign(winding);
 
     for i in 0..points.length {
         for j in i + 1..points.length {
@@ -98,10 +128,21 @@ fun init() {
                 compat(dir.0, check.0) and compat(dir.1, check.1)
             }
 
+            fun compat3(dir: (vec2i, int), check: vec2i, flag: int) -> bool {
+                if dir.1 == flag {
+                    compat2(dir.0, check)
+                }
+                else {
+                    compat2((-dir.0.0, -dir.0.1), check) and
+                        compat2(( dir.0.1, -dir.0.0), check) and
+                        compat2((-dir.0.1,  dir.0.0), check)
+                }
+            }
+
             var dir_a_to_b = bp - ap;
             var dir_b_to_a = ap - bp;
-            var valid = compat2(dirs[i], dir_a_to_b) and compat2(dirs[i], dir_b_to_a);
-            //print(valid);
+            var valid = compat3(dirs[i], dir_a_to_b, -winding) and compat3(dirs[j], dir_b_to_a, -winding);//compat2(dirs[i], dir_a_to_b) and compat2(dirs[i], dir_b_to_a);
+            print(valid);
             
             if valid {
                 var area = (abs(ap.0 - bp.0) + 1) * (abs(ap.1 - bp.1) + 1);
