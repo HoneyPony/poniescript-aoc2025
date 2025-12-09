@@ -1,3 +1,117 @@
-fun init() {
+var ZERO    = "0"[0];
+var NINE    = "9"[0];
 
+fun is_digit(c: int) -> bool {
+    c >= ZERO and c <= NINE
+}
+
+fun is_not_digit(c: int) -> bool {
+    c < ZERO or c > NINE
+}
+
+class Text {
+    // Note: Putting the read_text() directly here lead to an internal C error.
+    var text: StrBuf = "";
+    var idx = 0;
+
+    fun number() -> (int, bool) {
+        if idx >= text.length { return (0, false); }
+
+        var number = 0;
+        while is_digit(text[idx]) {
+            number = (number * 10 + text[idx] - ZERO);
+            idx = idx + 1;
+        }
+
+        while idx < text.length and is_not_digit(text[idx]) { idx = idx + 1; };
+
+        (number, true)
+    }
+
+    fun pair() -> (vec2i, bool) {
+        var a = number();
+        var b = number();
+        if a.1 and b.1 {
+            return ((a.0, b.0), false);
+        }
+        return ((0, 0), true);
+    }
+}
+
+fun get_text() -> Text { new Text { text: read_file("input.txt") } }
+
+fun init() {
+    var points: DynArray[vec2i] = [];
+    var dirs: DynArray[vec2i] = [];
+    //var pairs: DynArray[(vec2i, vec2i)] = [];
+    var text = get_text();
+
+    loop {
+        var next = text.pair();
+        if next.1 { break; };
+
+        points.push((next.0));
+    }
+
+    fun sign(x: int) -> int {
+        if x < 0 { return -1; }
+        if x > 0 { return 1; }
+        return 0;
+    }
+
+    fun sign2(x: vec2i) -> vec2i {
+        (sign(x.0), sign(x.1))
+    }
+
+    for i in 0..points.length {
+        var prev = i - 1;
+        if prev < 0 { prev = prev + points.length; }
+        var next = i + 1;
+        if next >= points.length { next = next - points.length; }
+
+        var dir = sign2(points[prev] - points[i]) + sign2(points[next] - points[i]);
+        // This doesn't work :(
+        //points[i].1 = dir;
+        dirs.push(dir);
+
+        print(dir, " ", dirs[i]);
+    }
+
+    fun abs(x: int) -> int {
+        if x < 0 { -x } else { x } 
+    }
+
+    var best = 0;
+
+    for i in 0..points.length {
+        for j in i + 1..points.length {
+            var ap = points[i];
+            var bp = points[j];
+
+            fun compat(dir: int, check: int) -> bool {
+                // No opinion.
+                if dir == 0 { return true; }
+                return sign(dir) == sign(check);
+            }
+
+            fun compat2(dir: vec2i, check: vec2i) -> bool {
+                compat(dir.0, check.0) and compat(dir.1, check.1)
+            }
+
+            var dir_a_to_b = bp - ap;
+            var dir_b_to_a = ap - bp;
+            var valid = compat2(dirs[i], dir_a_to_b) and compat2(dirs[i], dir_b_to_a);
+            //print(valid);
+            
+            if valid {
+                var area = (abs(ap.0 - bp.0) + 1) * (abs(ap.1 - bp.1) + 1);
+                //print(a, " ", b, " => ", area);
+                if area > best {
+                    best = area;
+                }
+            }
+        }
+    }
+
+    print(best);
 }
