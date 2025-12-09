@@ -97,13 +97,9 @@ fun init() {
 
         var dir = (points[prev] - points[i]) + (points[next] - points[i]);
 
-        //var dir = sign2(points[prev] - points[i]) + sign2(points[next] - points[i]);
         // This doesn't work :(
         //points[i].1 = dir;
         dirs.push((dir, rot));
-
-        //print(dir, " ", dirs[i]);
-        //print(winding);
     }
     print(winding);
 
@@ -119,11 +115,8 @@ fun init() {
     fun max(a: int, b: int) -> int { if a > b { a } else { b } }
 
     fun is_good_v2(a: vec2i, b: vec2i, points: DynArray[vec2i]) -> bool {
-        //print("candidate: ", a, " ", b);
         var low  = (min(a.0, b.0), min(a.1, b.1));
         var high = (max(a.0, b.0), max(a.1, b.1));
-
-        //print(low, high);
 
         for i in 0..points.length {
             var next = i + 1;
@@ -177,61 +170,10 @@ fun init() {
         true
     }
 
-    fun is_good(a: vec2i, b: vec2i, points: DynArray[vec2i]) -> bool {
-        var low = (min(a.0, b.0), min(a.1, b.1));
-        var high = (max(a.0, b.0), max(a.1, b.1));
-        for i in 0..points.length {
-            var p = points[i];
-
-            var next = i + 1;
-            if next >= points.length { next = next - points.length; }
-
-            var u = points[next];
-
-            var step = ((sign(u.0 - p.0)), sign(u.1 - p.1));
-            var count = abs(u.0 - p.0) + abs(u.1 - p.1);
-
-            for j in 0..count {
-                var a = p.0 > low.0 and p.0 < high.0;
-                //var b = p.0 >= low.0 and p.0 <= high.0;
-                var c = p.1 > low.1 and p.1 < high.1;
-                //var d = p.1 >= low.1 and p.1 <= high.1;
-                if a and c {
-                    return false;
-                }
-
-                p = p + step;
-            }
-        }
-
-        true
-    }
-
     for i in 0..points.length {
         for j in i + 1..points.length {
             var ap = points[i];
             var bp = points[j];
-
-            // fun compat(dir: int, check: int) -> bool {
-            //     // No opinion.
-            //     if dir == 0 { return true; }
-            //     return sign(dir) == sign(check);
-            // }
-
-            // fun compat2(dir: vec2i, check: vec2i) -> bool {
-            //     compat(dir.0, check.0) and compat(dir.1, check.1)
-            // }
-
-            // fun compat3(dir: (vec2i, int), check: vec2i, flag: int) -> bool {
-            //     if dir.1 == flag {
-            //         compat2(dir.0, check)
-            //     }
-            //     else {
-            //         compat2((-dir.0.0, -dir.0.1), check) and
-            //             compat2(( dir.0.1, -dir.0.0), check) and
-            //             compat2((-dir.0.1,  dir.0.0), check)
-            //     }
-            // }
 
             fun signmatch2(a: vec2i, b: vec2i) -> bool {
                 sign(a.0) == sign(b.0) and sign(a.1) == sign(b.1)
@@ -256,20 +198,13 @@ fun init() {
                     (other_predicate(u.0, dir.0.0) and funny_predicate(v.1, dir.0.1));
             }
 
-            // var dir_a_to_b = bp - ap;
-            // var dir_b_to_a = ap - bp;
-            // var valid = compat3(dirs[i], dir_a_to_b, winding) and compat3(dirs[j], dir_b_to_a, winding);//compat2(dirs[i], dir_a_to_b) and compat2(dirs[i], dir_b_to_a);
-            //print(valid);
-
             // as per input-me3, positive winding is correct...?
             var valid = compat(ap, bp, dirs[i], winding)
                  and compat(bp, ap, dirs[j], winding);
             
             if valid {
                 var area = (abs(ap.0 - bp.0) + 1) * (abs(ap.1 - bp.1) + 1);
-                //print(a, " ", b, " => ", area);
                 if area > best {
-                    //print("will try: ", ap, " ", bp);
                     // Now check the expensive one.
                     if is_good_v2(ap, bp, points) {
                         print("new best: ", ap, " ", bp);
@@ -278,7 +213,6 @@ fun init() {
                 }
             }
         }
-        //print("complete: ", i);
     }
 
     print(best);
