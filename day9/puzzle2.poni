@@ -38,7 +38,9 @@ class Text {
     }
 }
 
-fun get_text() -> Text { new Text { text: read_file("input-me.txt") } }
+fun get_text() -> Text { new Text { text: read_file("input.txt") } }
+
+fun not_(x: bool) -> bool { if x { false } else { true } }
 
 fun init() {
     var points: DynArray[vec2i] = [];
@@ -117,34 +119,74 @@ fun init() {
     fun max(a: int, b: int) -> int { if a > b { a } else { b } }
 
     fun contains_any_other_point(a: vec2i, b: vec2i, points: DynArray[vec2i]) -> bool {
+        //print("candidate: ", a, " ", b);
         var low  = (min(a.0, b.0), min(a.1, b.1));
         var high = (max(a.0, b.0), max(a.1, b.1));
 
         //print(low, high);
 
         for i in 0..points.length {
-            var point = points[i];
             var next = i + 1;
             if next >= points.length { next = next - points.length; }
 
-            var p: vec2 = points[i];
-            var u: vec2 = points[next];
+            var p: vec2i = points[i];
+            var u: vec2i = points[next];
 
-            var point = ((p.0 + u.0 / 2), (p.1 + u.1) / 2);
+            fun same(x: vec2i, y: vec2i) -> bool {
+                x.0 == y.0 and x.1 == y.1;
+            }
+            
+            var ok = same(p, a) or same(u, a) or same(p, b) or same(u, b);
 
-            if point.0 > low.0 and point.0 < high.0 and point.1 > low.1 and point.1 < high.1 {
-                return true;
-                // // Make sure it isn't *literally* the same point.
-                // if point.0 != a.0 or point.0 != b.0 or point.1 != a.1 or point.1 != b.1 {
-                //     return true;
-                // }
+            if p.0 == u.0 {
+                if p.0 > low.0 and p.0 < high.0 {
+                    var p_full = (p.1 >= low.1 and p.1 <= high.1);
+                    var p_part = (p.1 > low.1 and p.1 < high.1);
+                    var u_full = (u.1 >= low.1 and u.1 <= high.1);
+                    var u_part = (u.1 > low.1 and u.1 < high.1);
+
+                    var ps = p.1 + sign(u.1 - p.1);
+                    var ps_full = (ps >= low.1 and ps <= high.1);
+
+                    var us = u.1 + sign(p.1 - u.1);
+                    var us_full = (us >= low.1 and us <= high.1);
+
+                    if ((p_full and ps_full) or (u_full and us_full) or (p_part and u_part)) {
+                        if not_(ok) {
+                            //print("bad y: ", p, " ", u);
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            if p.1 == u.1 {
+                if p.1 > low.1 and p.1 < high.1 {
+                    var p_full = (p.1 >= low.0 and p.1 <= high.0);
+                    var p_part = (p.1 > low.0 and p.1 < high.0);
+                    var u_full = (u.1 >= low.0 and u.1 <= high.0);
+                    var u_part = (u.1 > low.0 and u.1 < high.0);
+
+                   var ps = p.0 + sign(u.0 - p.0);
+                    var ps_full = (ps >= low.0 and ps <= high.0);
+
+                    var us = u.0 + sign(p.0 - u.0);
+                    var us_full = (us >= low.0 and us <= high.0);
+
+                    if ((p_full and ps_full) or (u_full and us_full) or (p_part and u_part)) {
+                        if not_(ok) {
+                            //print("bad x: ", p, " ", u);
+                            return true;
+                        }
+                    }
+                }
             }
         }
 
         false
     }
 
-    fun not_(x: bool) -> bool { if x { false } else { true } }
+    
 
     for i in 0..points.length {
         for j in i + 1..points.length {
@@ -200,6 +242,7 @@ fun init() {
             //var valid = compat(dirs[i], dir_a_to_b, winding) and compat(dirs[j], dir_b_to_a, winding);//compat2(dirs[i], dir_a_to_b) and compat2(dirs[i], dir_b_to_a);
             //print(valid);
 
+            // as per input-me3, positive winding is correct...?
             var valid = compat(ap, bp, dirs[i], winding)
                 and compat(bp, ap, dirs[j], winding);
             
@@ -207,6 +250,7 @@ fun init() {
                 var area = (abs(ap.0 - bp.0) + 1) * (abs(ap.1 - bp.1) + 1);
                 //print(a, " ", b, " => ", area);
                 if area > best {
+                    //print("will try: ", ap, " ", bp);
                     // Now check the expensive one.
                     if not_(contains_any_other_point(ap, bp, points)) {
                         print("new best: ", ap, " ", bp);
