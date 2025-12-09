@@ -28,6 +28,8 @@ fun includes(range: vec2i, value: int) -> bool {
 }
 
 fun is_in_any_range(vals: DynArray[vec2i], value: int) -> bool {
+    // needs closures:
+    // vals.any(|v| includes(v, value))
     for i in 0..vals.length {
         if includes(vals[i], value) { return true; }
     }
@@ -100,6 +102,8 @@ fun init() {
         ranges = new_list;
     }
 
+    // var sum = ranges.fold(0, fun(s: int, el: vec2i) { s + el.1 - el.0 + 1 })
+    // var sum = ranges.fold(0, |s, el| s + el.1 - el.0 + 1)
     var sum = 0;
     for i in 0..ranges.length {
         sum = sum + ranges[i].1 - ranges[i].0 + 1;
