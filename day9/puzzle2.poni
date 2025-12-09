@@ -38,7 +38,7 @@ class Text {
     }
 }
 
-fun get_text() -> Text { new Text { text: read_file("input-me4.txt") } }
+fun get_text() -> Text { new Text { text: read_file("input.txt") } }
 
 fun not_(x: bool) -> bool { if x { false } else { true } }
 
@@ -190,7 +190,35 @@ fun init() {
         false
     }
 
-    
+    fun is_good(a: vec2i, b: vec2i, points: DynArray[vec2i]) -> bool {
+        var low = (min(a.0, b.0), min(a.1, b.1));
+        var high = (max(a.0, b.0), max(a.1, b.1));
+        for i in 0..points.length {
+            var p = points[i];
+
+            var next = i + 1;
+            if next >= points.length { next = next - points.length; }
+
+            var u = points[next];
+
+            var step = ((sign(u.0 - p.0)), sign(u.1 - p.1));
+            var count = abs(u.0 - p.0) + abs(u.1 - p.1);
+
+            for j in 0..count {
+                var a = p.0 > low.0 and p.0 < high.0;
+                //var b = p.0 >= low.0 and p.0 <= high.0;
+                var c = p.1 > low.1 and p.1 < high.1;
+                //var d = p.1 >= low.1 and p.1 <= high.1;
+                if a and c {
+                    return false;
+                }
+
+                p = p + step;
+            }
+        }
+
+        true
+    }
 
     for i in 0..points.length {
         for j in i + 1..points.length {
@@ -250,19 +278,20 @@ fun init() {
             var valid = compat(ap, bp, dirs[i], winding)
                  and compat(bp, ap, dirs[j], winding);
             
-            if valid {
+            //if valid {
                 var area = (abs(ap.0 - bp.0) + 1) * (abs(ap.1 - bp.1) + 1);
                 //print(a, " ", b, " => ", area);
                 if area > best {
                     //print("will try: ", ap, " ", bp);
                     // Now check the expensive one.
-                    if not_(contains_any_other_point(ap, bp, points)) {
+                    if is_good(ap, bp, points) {
                         print("new best: ", ap, " ", bp);
                         best = area;
                     }
                 }
-            }
+            //}
         }
+        print("complete: ", i);
     }
 
     print(best);

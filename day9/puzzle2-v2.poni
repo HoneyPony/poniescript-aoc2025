@@ -77,7 +77,11 @@ fun init() {
         var high = (max(a.0, b.0), max(a.1, b.1));
         for i in 0..points.length {
             var p = points[i];
-            if p.0 > low.0 and p.0 < high.0 and p.1 > low.1 and p.1 < high.1 {
+            var a = p.0 > low.0 and p.0 < high.0;
+            //var b = p.0 >= low.0 and p.0 <= high.0;
+            var c = p.1 > low.1 and p.1 < high.1;
+            //var d = p.1 >= low.1 and p.1 <= high.1;
+            if b and d {
                 return false;
             }
         }
