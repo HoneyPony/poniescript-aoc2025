@@ -9,3 +9,7 @@ imports = ["../read_file.h"]
 [projects.puzzle1-dynarray]
 files = ["puzzle1-dynarray.poni"]
 imports = ["../read_file.h"]
+
+[projects.puzzle2-dynarray]
+files = ["puzzle2-dynarray.poni"]
+imports = ["../read_file.h"]
