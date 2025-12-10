@@ -1,0 +1,37 @@
+var RBRACKET = "]"[0];
+var DOT = "."[0];
+var HASH = "#"[0];
+
+class Box {
+    var elems: DynArray[bool] = [];
+}
+
+class Text {
+    var text: StrBuf = "";
+    var idx : int    = 0;
+
+    fun box() -> Box {
+        // Skip the [
+        idx = idx + 1;
+        var box = new Box{};
+        while text[idx] != RBRACKET {
+            box.elems.push(text[idx] == HASH);
+            idx = idx + 1;
+        }
+
+        // Skip the ]
+        idx = idx + 1;
+
+        box
+    }
+}
+
+fun get_text() -> Text { new Text { text: read_file("input.txt") } }
+
+fun init() {
+    var text = get_text();
+    var box = text.box();
+    for i in 0..box.elems.length {
+        print(box.elems[i]);
+    }
+}
