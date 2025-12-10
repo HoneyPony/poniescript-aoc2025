@@ -22,6 +22,60 @@ class Box {
 class Puzzle {
     var box: Box = new Box{};
     var buttons: DynArray[Box] = [];
+
+    // The best value starts at the number of elements, and then improves
+    // as we search more things.
+    var part1_best: int = box.elems.length;
+
+    // tester we modify as we go.
+    //
+    // Idx is which of the buttons[] we use.
+    //
+    // num_others is the number of others we have activated here.
+    fun dfs(tester: DynArray[bool], idx: int, num_others: int) {
+        if idx >= buttons.length { return; };
+
+        fun xor(a: bool, b: bool) -> bool {
+            if a { if b { false } else { true } } else { if b { true } else { false } }
+        }
+
+        fun is_valid(tester: DynArray[bool]) -> bool {
+            tester.all(fun(b: bool) -> bool { if b { false } else { true } })
+        }
+
+        var button = buttons[idx];
+        // Test the non-active path first, I guess.
+        // num_others is the same, as we aren't active.
+        dfs(tester, idx + 1, num_others);
+        if num_others < part1_best and is_valid(tester) {
+            part1_best = num_others;
+        }
+
+        // Now, activate ourselves.
+        for i in 0..tester.length {
+            tester[i] = xor(tester[i], button.elems[i]);
+        }
+        // Increase num_others by 1 here because we are active.
+        dfs(tester, idx + 1, num_others + 1);
+        if num_others + 1 < part1_best and is_valid(tester) {
+            part1_best = num_others + 1;
+        }
+        // Now reset the array.
+        for i in 0..tester.length {
+            tester[i] = xor(tester[i], button.elems[i]);
+        }
+    }
+
+    fun solve_part_1() {
+        // Do a depth first search through box XOR buttons[]. At each level,
+        // if we solve the puzzle, we store the number we got.
+        var tester: DynArray[bool] = [];
+        for i in 0..box.elems.length {
+            tester.push(box.elems[i]);
+        }
+
+        dfs(tester, 0, 0);
+    }
 }
 
 class Text {
@@ -102,5 +156,15 @@ fun init() {
         puzzles.push(puzzle);
     }
 
-    print("puzzles: ", puzzles.length);
+    //print("puzzles: ", puzzles.length);
+    var sum = 0;
+    for i in 0..puzzles.length {
+        var puzzle = puzzles[i];
+        puzzle.solve_part_1();
+        //rint(puzzle.part1_best);
+
+        sum = sum + puzzle.part1_best;
+    }
+
+    print(sum);
 }
