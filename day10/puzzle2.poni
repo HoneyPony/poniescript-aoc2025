@@ -84,6 +84,7 @@ class Matrix {
     var rows: DynArray[Row] = [];
 
     var best: float = 100000000;
+    var got_solution: bool = false;
 
     fun swap(idx1: int, idx2: int) {
         var tmp = rows[idx1];
@@ -134,7 +135,7 @@ class Matrix {
         col_count <= row_count
     }
 
-    fun dfs(puzzle: Puzzle, positives: DynArray[bool], assign: DynArray[int], test_arr: DynArray[float], idx: int) {
+    fun dfs(maxneg: float, puzzle: Puzzle, positives: DynArray[bool], assign: DynArray[int], test_arr: DynArray[float], idx: int) {
         var row_count = rows.length;
         var col_count = rows[0].elems.length;
 
@@ -198,6 +199,7 @@ class Matrix {
                 //print("is good: sum = ", sum);
                 if sum < best {
                     best = sum;
+                    got_solution = true;
                     print("new best: ", best);
                 }
             }
@@ -259,14 +261,14 @@ class Matrix {
             for j in 0..puzzle.joltages.length {
                 // Overshot. Whoops.
                 if large { print(test_arr[j], " ", puzzle.joltages[j]); }
-                if test_arr[j] > (puzzle.joltages[j] + 1) {
+                if test_arr[j] + maxneg > puzzle.joltages[j] {
                     print(j, " ", test_arr[j], " > ", puzzle.joltages[j]);
                     done = true;
                     break;
                 }
             }
 
-            dfs(puzzle, positives, assign, test_arr, idx + 1);
+            dfs(maxneg, puzzle, positives, assign, test_arr, idx + 1);
 
             // ?
             if done or assign[idx] > 400 {
@@ -292,6 +294,7 @@ class Matrix {
             for i in 0..row_count {
                 sum = sum + rows[i].elems[col_count - 1];
             }
+            got_solution = true;
             return sum;
         }
 
@@ -309,8 +312,12 @@ class Matrix {
         print_me();
         var assignment: DynArray[int] = [];
         var positives: DynArray[bool] = [];
+        var maxneg: float = 0.0;
         for i in 0..row_count {
             positives.push(rows[i].elems[col_count - 1] >= 0);
+            if rows[i].elems[col_count - 1] < maxneg {
+                maxneg = rows[i].elems[col_count - 1];
+            }
             //print("positives @ ", i " ", positives[i]);
         }
         for i in row_count..col_count - 1 {
@@ -349,7 +356,7 @@ class Matrix {
         for i in 0..puzzle.joltages.length { test_arr.push(0); }
 
         print("assignment.len: ", assignment.length);
-        dfs(puzzle, positives, assignment, test_arr, 0);
+        dfs(maxneg, puzzle, positives, assignment, test_arr, 0);
 
         return best;
     }
@@ -667,6 +674,7 @@ fun init() {
         puzzles.push(puzzle);
     }
 
+    // Ones to manually check: idx 5, idx 176, idx 51, idx 175
     var sum = 0.0;
     for k in 0..puzzles.length {
         var puzzle = puzzles[k];
@@ -683,7 +691,7 @@ fun init() {
         matrix.rref();
         print("solve for: ", k);
         var solution = matrix.get_best(puzzle);
-        print("solution: ", solution);
+        print("solution: ", matrix.got_solution, " ", solution);
 
         sum = sum + solution;
         //break;
