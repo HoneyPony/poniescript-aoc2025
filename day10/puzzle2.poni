@@ -30,8 +30,6 @@ fun is_even(x: int) -> int {
 }
 
 class Solution {
-    var elems: DynArray[bool] = [];
-
     var best: int = 10000000000;
     var has_solution: bool = false;
 
@@ -78,14 +76,14 @@ class Solution {
         var my_presses = 0;
 
         while (my_presses + num_pressed < best) and is_le(attempt, puzzle.joltages) {
-            incr(attempt, button, 2);
-            print("[", idx, " - ", num_pressed, "] attempt: ", attempt[0], " ", attempt[1], " ", attempt[2], " ", attempt[3], " ", attempt[4], " ", attempt[5]);
+            incr(attempt, button, 1);
+            //print("[", idx, " - ", num_pressed, "] attempt: ", attempt[0], " ", attempt[1], " ", attempt[2], " ", attempt[3], " ", attempt[4], " ", attempt[5]);
             my_presses = my_presses + 1;
         }
-        decr(attempt, button, 2);
+        decr(attempt, button, 1);
         my_presses = my_presses - 1;
 
-        print("[", idx, "] starting presses: ", my_presses);
+       // print("[", idx, "] starting presses: ", my_presses);
 
         // Now, while we still have any presses left, check for solutions.
         while my_presses > 0 {
@@ -99,7 +97,7 @@ class Solution {
 
             // Then, decrement.
             my_presses = my_presses - 1;
-            decr(attempt, button, 2);
+            decr(attempt, button, 1);
         }
     }
 
@@ -113,24 +111,6 @@ class Solution {
         }
 
         var num_pressed = 0;
-        for i in 0..puzzle.buttons.length {
-            if elems[i] {
-                print("press ", i);
-                incr(attempt, puzzle.buttons[i], 1);
-                print(" -> ", attempt[0], " ", attempt[1], " ", attempt[2], " ", attempt[3], " ", attempt[4], " ", attempt[5]);
-                num_pressed = num_pressed + 1;
-            }
-        }
-
-        //print("attempt: ", attempt[0], " ", attempt[1], "...");
-
-        // OPT: Check parity right now. If it doesn't match, give up.
-        for i in 0..attempt.length {
-            if is_even(attempt[i]) != is_even(puzzle.joltages[i]) {
-                print("joltage parity mismatch @ ", i);
-                return;
-            }
-        }
 
         dfs(attempt, puzzle, 0, num_pressed);
     }
@@ -140,85 +120,6 @@ class Puzzle {
     var box: Box = new Box{};
     var buttons: DynArray[Box] = [];
     var joltages: DynArray[int] = [];
-
-    // The best value starts at the number of elements, and then improves
-    // as we search more things.
-    //var part1_best: int = box.elems.length;
-    //var part1_best_dbg: DynArray[bool] = [];
-
-    var solutions: DynArray[Solution] = [];
-
-    fun same(a: bool, b: bool) -> bool {
-        if a { if b { true } else { false } } else { if b { false } else { true } }
-    }
-
-    fun xor(a: bool, b: bool) -> bool {
-        if a { if b { false } else { true } } else { if b { true } else { false } }
-    }
-
-    fun is_valid(tester: DynArray[bool]) -> bool {
-        //tester.all(fun(b: bool) -> bool { if b { false } else { true } })
-        for i in 0..box.elems.length {
-            if xor(tester[i], box.elems[i]) { return false; }
-        }
-        true
-    }
-
-    // tester we modify as we go.
-    //
-    // Idx is which of the buttons[] we use.
-    //
-    // num_others is the number of others we have activated here.
-    fun dfs(tester: DynArray[bool], idx: int, num_others: int, dbg: DynArray[bool]) {
-        if idx >= buttons.length { return; };
-
-        var button = buttons[idx];
-        // Test the non-active path first, I guess.
-        // num_others is the same, as we aren't active.
-        dfs(tester, idx + 1, num_others, dbg);
-        if is_valid(tester) {
-            var solution = new Solution{};
-            for i in 0..dbg.length { solution.elems.push(dbg[i]); }
-            //print(solution.elems.length, " ", joltages.length);
-            solutions.push(solution);
-        }
-
-        // Now, activate ourselves.
-        for i in 0..tester.length {
-            tester[i] = xor(tester[i], button.elems[i]);
-        }
-        // Increase num_others by 1 here because we are active.
-        dbg[idx] = true;
-        dfs(tester, idx + 1, num_others + 1, dbg);
-        if is_valid(tester) {
-            var solution = new Solution{};
-            for i in 0..dbg.length { solution.elems.push(dbg[i]); }
-            //print(solution.elems.length, " ", joltages.length);
-            solutions.push(solution);
-        }
-        dbg[idx] = false;
-        // Now reset the array.
-        for i in 0..tester.length {
-            tester[i] = xor(tester[i], button.elems[i]);
-        }
-    }
-
-    fun solve_part_1() {
-        // Do a depth first search through box XOR buttons[]. At each level,
-        // if we solve the puzzle, we store the number we got.
-        var tester: DynArray[bool] = [];
-        for i in 0..box.elems.length {
-            // All lights initially off.
-            tester.push(false);
-        }
-
-        var dbg: DynArray[bool] = [];
-        for i in 0..buttons.length {
-            dbg.push(false);
-        }
-
-        dfs(tester, 0, 0, dbg);
-    }
 }
 
 class Text {
@@ -331,16 +232,12 @@ fun init() {
     var sum = 0;
     for i in 0..puzzles.length {
         var puzzle = puzzles[i];
-        puzzle.solve_part_1();
+        //puzzle.solve_part_1();
+        var solution = new Solution{};
+        solution.solve_for(puzzle);
+        print(solution.best);
 
-        for j in 0..puzzle.solutions.length {
-            print("solution ", j);
-            puzzle.solutions[j].solve_for(puzzle);
-            print(" -> ", puzzle.solutions[j].best);
-        }
-
-        break;
-        //print(puzzle.box.elems.length, " ", puzzle.buttons.length, " ", puzzle.box.elems.length <= puzzle.buttons.length);
+        sum = sum + solution.best;
     }
 
     print(sum);
