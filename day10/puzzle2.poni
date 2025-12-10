@@ -83,6 +83,8 @@ class Row {
 class Matrix {
     var rows: DynArray[Row] = [];
 
+    var best: float = 100000000;
+
     fun swap(idx1: int, idx2: int) {
         var tmp = rows[idx1];
         rows[idx1] = rows[idx2];
@@ -132,7 +134,134 @@ class Matrix {
         col_count <= row_count
     }
 
-    fun get_best() -> float {
+    fun dfs(puzzle: Puzzle, assign: DynArray[int], test_arr: DynArray[float], idx: int) {
+        var row_count = rows.length;
+        var col_count = rows[0].elems.length;
+        
+        if idx >= assign.length {
+            var as = str("");
+            for j in 0..assign.length {
+                as = str(as, ", ", assign[j]);
+            }
+
+            var ta = str("");
+            for j in 0..test_arr.length {
+                ta = str(ta, ", ", test_arr[j]);
+            }
+            print("assign: ", as, " test_arr: ", ta);
+
+            // Test if this is a solution.
+            var is_good = true;
+            for i in 0..test_arr.length {
+                var k = roundit(test_arr[i]);
+                var dif = k - test_arr[i];
+                if ((dif < -0.03) or dif > 0.03) { is_good = false; break; }
+
+                if k != puzzle.joltages[i] { is_good = false; break; }
+            }
+
+            var sum = 0.0;
+            for i in 0..puzzle.buttons.length {
+                var count = if i < row_count {
+                    // 1x 0y 0z 0d 2e 3f | 23
+                    // -> x = 23 - 2e - 3f
+                    var c = rows[i].elems[col_count - 1];
+                    for j in row_count..col_count - 1 {
+                        c = c - rows[i].elems[j] * assign[j - row_count];
+                    }
+                    c
+                }
+                else {
+                    // Read this counter from the assignment we're trying.
+                    assign[i - row_count]
+                };
+
+                print("count @ ", i, " = ", count);
+
+                sum = sum + count;
+
+                var k = roundit(count);
+                var dif = k - count;
+                //if ((dif < -0.03) or dif > 0.03) { is_good = false; break; }
+
+                //if count < 0 { is_good = false; break; }
+                0;
+            }
+
+            if is_good {
+                if sum < best {
+                    best = sum;
+                    print("new best: ", best);
+                }
+            }
+            return;
+        }
+
+        var original = assign[idx];
+        
+
+        var reset: DynArray[float] = [];
+        for i in 0..test_arr.length { reset.push(0); }
+
+        for i in 0..test_arr.length {
+            reset[i] = test_arr[i];
+        }
+
+        loop {
+            var done = false;
+
+            for i in 0..puzzle.buttons.length {
+                var count = if i < row_count {
+                    // 1x 0y 0z 0d 2e 3f | 23
+                    // -> x = 23 - 2e - 3f
+                    var c = rows[i].elems[col_count - 1];
+                    for j in row_count..col_count - 1 {
+                        c = c - rows[i].elems[j] * assign[j - row_count];
+                    }
+                    if c < 0 { done = true; }
+                    c
+                }
+                else {
+                    // Read this counter from the assignment we're trying.
+                    assign[i - row_count]
+                };
+
+                for j in 0..puzzle.joltages.length {
+                    test_arr[j] = test_arr[j] + count * if puzzle.buttons[i].elems[j] { 1 } else { 0 };
+                }
+            }
+
+            
+            for j in 0..puzzle.joltages.length {
+                // Overshot. Whoops.
+                if test_arr[j] > puzzle.joltages[j] {
+                    print(j, " ", test_arr[j], " > ", puzzle.joltages[j]);
+                    done = true;
+                    break;
+                }
+            }
+
+            if done {
+                break;
+            }
+
+            dfs(puzzle, assign, test_arr, idx + 1);
+
+            for j in 0..puzzle.joltages.length {
+                test_arr[j] = reset[j];
+            }
+
+            assign[idx] = assign[idx] + 1;
+        }
+
+        for j in 0..puzzle.joltages.length {
+            test_arr[j] = reset[j];
+        }
+
+        assign[idx] = original;
+    }
+
+    fun get_best(puzzle: Puzzle) -> float {
         var col_count = rows[0].elems.length;
         var row_count = rows.length;
         if (col_count - 1) <= row_count {
@@ -156,33 +285,16 @@ class Matrix {
 
         print("bad matrix. creating sub-matrix and iterating...");
         print_me();
-        var submatrix = new Matrix{};
-        var lc = row_count;
-        for i in 0..row_count {
-            var row = new Row{};
-            for j in 0..col_count {
-                print(j);
-                row.elems.push(rows[i].elems[j]);
-            }
-            submatrix.rows.push(row);
+        var assignment: DynArray[int] = [];
+        for i in row_count..col_count - 1 {
+            assignment.push(0);
         }
-        submatrix.print_me();
 
-        loop {
-            var rc = submatrix.rows.length;
-            var cc = submatrix.rows[0].elems.length;
-            for i in 0..rc {
-                fun the_thing(x: float) -> float { if x < 0 { 0 } else { x } }
-                var adjusted = roundit(the_thing(submatrix.rows[i].elems[cc - 1]));
-                submatrix.rows[i].sub(submatrix.rows[i].elems[cc - 1] - adjusted);
-                //submatrix.rows[i].elems[cc - 1] = ;
-            }
+        var test_arr: DynArray[float] = [];
+        for i in 0..puzzle.joltages.length { test_arr.push(0); }
 
-            //submatrix.print_me();
-            submatrix.rref();
-            print("---");
-            submatrix.print_me();
-        }
+        print("assignment.len: ", assignment.length);
+        dfs(puzzle, assignment, test_arr, 0);
 
         return -1;
     }
@@ -242,7 +354,7 @@ class Combos {
 
             to.rref();
             to.print_me();
-            var best_ = to.get_best();
+            var best_ = 0; //to.get_best(puzzle);
 
             print(" -> ", best_);
 
@@ -501,7 +613,7 @@ fun init() {
     }
 
     var sum = 0;
-    for k in 2..puzzles.length {
+    for k in 0..puzzles.length {
         var puzzle = puzzles[k];
         var matrix = new Matrix{};
         for i in 0..puzzle.joltages.length {
@@ -514,7 +626,7 @@ fun init() {
         }
 
         matrix.rref();
-        var solution = matrix.get_best();
+        var solution = matrix.get_best(puzzle);
         //print("solution: ", solution);
 
         if solution < 0 {
