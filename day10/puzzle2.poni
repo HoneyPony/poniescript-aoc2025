@@ -29,6 +29,100 @@ fun is_even(x: int) -> int {
     if x < 0 { 0 } else { 1 }
 }
 
+class Row {
+    var elems: DynArray[float] = [];
+
+    fun minus(idx: int, row: Row) {
+        if elems[idx] == 0 {
+            return;
+        }
+        var coefficient = elems[idx] / row.elems[idx];
+        for i in 0..elems.length {
+            elems[i] = elems[i] - coefficient * row.elems[i];
+        }
+    }
+
+    fun normalize(idx: int) {
+        var coefficient = elems[idx];
+        for i in 0..elems.length {
+            elems[i] = elems[i] / coefficient;
+        }
+    }
+
+    fun print_me() {
+        var s = str("");
+        for i in 0..elems.length {
+            if i > 0 { s = str(s, ", "); }
+            s = str(s, elems[i]);
+        }
+
+        print("[", s, "]");
+    }
+}
+
+class Matrix {
+    var rows: DynArray[Row] = [];
+
+    fun swap(idx1: int, idx2: int) {
+        var tmp = rows[idx1];
+        rows[idx1] = rows[idx2];
+        rows[idx2] = tmp;
+    }
+
+    fun rref() {
+        var cols = rows[0].elems.length;
+        var row_count = rows.length;
+        for i in 0..row_count {
+            if i >= cols { break; }
+            // We want to find a row with a non-zero entry, swap it to be
+            // the ith row, and then delete it from all the other rows.
+            var from_idx = (0, false);
+            for j in i..row_count {
+                if rows[j].elems[i] != 0 {
+                    from_idx = (j, true);
+                    break;
+                }
+            }
+
+            // Okay, if we have this row, then swap it, and then delete it
+            // from every other row.
+            if from_idx.1 {
+                swap(i, from_idx.0);
+
+                var row = rows[i];
+                row.normalize(i);
+                for j in 0..row_count {
+                    if j != i {
+                        rows[j].minus(i, row);
+                    }
+                }
+            }
+        }
+    }
+
+    fun print_me() {
+        for i in 0..rows.length {
+            rows[i].print_me();
+        }
+    }
+
+    fun get_best() -> float {
+        var col_count = rows[0].elems.length;
+        var row_count = rows.length;
+        if col_count >= row_count {
+            // Best is simply the sum of the right column.
+            var sum = 0.0;
+            for i in 0..row_count {
+                sum = sum + rows[i].elems[row_count - 1];
+            }
+            return sum;
+        }
+
+        // TODO:
+        0
+    }
+}
+
 class Solution {
     var elems: DynArray[bool] = [];
 
@@ -147,88 +241,6 @@ class Puzzle {
     //var part1_best_dbg: DynArray[bool] = [];
 
     var solutions: DynArray[Solution] = [];
-
-    fun same(a: bool, b: bool) -> bool {
-        if a { if b { true } else { false } } else { if b { false } else { true } }
-    }
-
-    fun xor(a: bool, b: bool) -> bool {
-        if a { if b { false } else { true } } else { if b { true } else { false } }
-    }
-
-    fun is_valid(tester: DynArray[bool]) -> bool {
-        //tester.all(fun(b: bool) -> bool { if b { false } else { true } })
-        for i in 0..box.elems.length {
-            if xor(tester[i], box.elems[i]) { return false; }
-        }
-        true
-    }
-
-    // tester we modify as we go.
-    //
-    // Idx is which of the buttons[] we use.
-    //
-    // num_others is the number of others we have activated here.
-    fun dfs(tester: DynArray[bool], idx: int, num_others: int, dbg: DynArray[bool]) {
-        if idx >= buttons.length { return; };
-
-        var button = buttons[idx];
-        // Test the non-active path first, I guess.
-        // num_others is the same, as we aren't active.
-        dfs(tester, idx + 1, num_others, dbg);
-        if is_valid(tester) {
-            var solution = new Solution{};
-            for i in 0..dbg.length { solution.elems.push(dbg[i]); }
-            //print(solution.elems.length, " ", joltages.length);
-            solutions.push(solution);
-        }
-
-        // Now, activate ourselves.
-        for i in 0..tester.length {
-            tester[i] = xor(tester[i], button.elems[i]);
-        }
-        // Increase num_others by 1 here because we are active.
-        dbg[idx] = true;
-        dfs(tester, idx + 1, num_others + 1, dbg);
-        if is_valid(tester) {
-            var solution = new Solution{};
-            for i in 0..dbg.length { solution.elems.push(dbg[i]); }
-            //print(solution.elems.length, " ", joltages.length);
-            solutions.push(solution);
-        }
-        dbg[idx] = false;
-        // Now reset the array.
-        for i in 0..tester.length {
-            tester[i] = xor(tester[i], button.elems[i]);
-        }
-    }
-
-    fun solve_part_1() {
-        // Do a depth first search through box XOR buttons[]. At each level,
-        // if we solve the puzzle, we store the number we got.
-        var tester: DynArray[bool] = [];
-        for i in 0..box.elems.length {
-            // All lights initially off.
-            tester.push(false);
-        }
-
-        var dbg: DynArray[bool] = [];
-        for i in 0..buttons.length {
-            dbg.push(false);
-        }
-
-        dfs(tester, 0, 0, dbg);
-    }
-
-    fun solve_part_2() {
-        // For part 2, we want to find solutions that make the parity of the
-        // joltage array match the thing. In particular, our goal is effectively
-        // that any odd part of the joltage array is on.
-        for i in 0..joltages.length {
-            box.elems[i] = (is_even(joltages[i]) == 0);
-        }
-        solve_part_1();
-    }
 }
 
 class Text {
@@ -341,21 +353,45 @@ fun init() {
     var sum = 0;
     for i in 0..puzzles.length {
         var puzzle = puzzles[i];
-        puzzle.solve_part_2();
-
-        var best = 1000000000;
-        for j in 0..puzzle.solutions.length {
-            print("solution ", j);
-            puzzle.solutions[j].best = best;
-            puzzle.solutions[j].solve_for(puzzle);
-            print(" -> ", puzzle.solutions[j].best);
-
-            if puzzle.solutions[j].best < best {
-                best = puzzle.solutions[j].best;
+        var matrix = new Matrix{};
+        for i in 0..puzzle.joltages.length {
+            var row = new Row{};
+            for j in 0..puzzle.buttons.length {
+                row.elems.push(if puzzle.buttons[j].elems[i] { 1 } else { 0 });
             }
+            row.elems.push(puzzle.joltages[i]);
+            matrix.rows.push(row);
         }
-        print("final best => ", best);
-        //print(puzzle.box.elems.length, " ", puzzle.buttons.length, " ", puzzle.box.elems.length <= puzzle.buttons.length);
+
+        print("--- ", i, " ---");
+        matrix.print_me();
+        matrix.rref();
+        print(">-- ", i, " rref ---");
+        matrix.print_me();
+        print("solution: ", matrix.get_best());
+
+        if i > 4 { break; };
+
+        // if puzzle.joltages.length >= puzzle.buttons.length {
+        //     print("---");
+        //     matrix.print_me();
+        //     print("--- rref ---");
+        //     matrix.rref();
+        //     matrix.print_me();
+        //     break;
+        // }
+        // if puzzle.joltages.length < puzzle.buttons.length {
+        //     print("---");
+        //     for i in 0..puzzle.joltages.length {
+        //         var row = str("");
+        //         for j in 0..puzzle.buttons.length {
+        //             //print(i, " ", j, " ", puzzle.buttons[j].elems[i]);
+        //             row = str(row, ", ", if puzzle.buttons[j].elems[i] { 1 } else { 0 });
+        //             //print(row);
+        //         }
+        //         print(row, ", ", puzzle.joltages[i]);
+        //     }
+        // }
     }
 
     print(sum);
