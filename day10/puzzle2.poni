@@ -40,18 +40,18 @@ class Solution {
         return true;
     }
 
-    fun incr(attempt: DynArray[int], button: Box) {
+    fun incr(attempt: DynArray[int], button: Box, by: int) {
         for i in 0..attempt.length {
             if button.elems[i] {
-                attempt[i] = attempt[i] + 2;
+                attempt[i] = attempt[i] + by;
             }
         }
     }
 
-    fun decr(attempt: DynArray[int], button: Box) {
+    fun decr(attempt: DynArray[int], button: Box, by: int) {
         for i in 0..attempt.length {
             if button.elems[i] {
-                attempt[i] = attempt[i] + 2;
+                attempt[i] = attempt[i] - by;
             }
         }
     }
@@ -69,11 +69,12 @@ class Solution {
         var my_presses = 0;
 
         while (my_presses + num_pressed < best) and is_le(attempt, puzzle.joltages) {
-            incr(attempt, button);
-            print("attempt: ", attempt[0], " ", attempt[1], "...");
+            incr(attempt, button, 2);
+            //print("attempt: ", attempt[0], " ", attempt[1], "...");
             my_presses = my_presses + 1;
         }
-        decr(attempt, button);
+        decr(attempt, button, 2);
+        my_presses = my_presses - 1;
 
         // Now, while we still have any presses left, check for solutions.
         while my_presses > 0 {
@@ -87,7 +88,7 @@ class Solution {
 
             // Then, decrement.
             my_presses = my_presses - 1;
-            decr(attempt, button);
+            decr(attempt, button, 2);
         }
     }
 
@@ -103,12 +104,12 @@ class Solution {
         var num_pressed = 0;
         for i in 0..puzzle.buttons.length {
             if elems[i] {
-                incr(attempt, puzzle.buttons[i]);
+                incr(attempt, puzzle.buttons[i], 1);
                 num_pressed = num_pressed + 1;
             }
         }
 
-        print("attempt: ", attempt[0], " ", attempt[1], "...");
+        //print("attempt: ", attempt[0], " ", attempt[1], "...");
 
         // OPT: Check parity right now. If it doesn't match, give up.
 
@@ -304,8 +305,6 @@ fun init() {
 
         var joltages = text.joltages();
         puzzle.joltages = joltages;
-
-        print(joltages.length, " ", puzzle.box.elems.length, " ", joltages.length == puzzle.box.elems.length);
 
         puzzles.push(puzzle);
     }
