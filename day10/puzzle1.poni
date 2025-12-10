@@ -26,29 +26,53 @@ class Puzzle {
     // The best value starts at the number of elements, and then improves
     // as we search more things.
     var part1_best: int = box.elems.length;
+    var part1_best_dbg: DynArray[bool] = [];
+
+    fun get_dbg_str() -> StrBuf {
+        var x: StrBuf = "";
+
+        for i in 0..part1_best_dbg.length {
+            x = str(x, ", ", part1_best_dbg[i]);
+        }
+
+        x
+    }
+
+    fun same(a: bool, b: bool) -> bool {
+        if a { if b { true } else { false } } else { if b { false } else { true } }
+    }
+
+    fun xor(a: bool, b: bool) -> bool {
+        if a { if b { false } else { true } } else { if b { true } else { false } }
+    }
+
+    fun is_valid(tester: DynArray[bool]) -> bool {
+        //tester.all(fun(b: bool) -> bool { if b { false } else { true } })
+        for i in 0..box.elems.length {
+            if xor(tester[i], box.elems[i]) { return false; }
+        }
+        true
+    }
 
     // tester we modify as we go.
     //
     // Idx is which of the buttons[] we use.
     //
     // num_others is the number of others we have activated here.
-    fun dfs(tester: DynArray[bool], idx: int, num_others: int) {
+    fun dfs(tester: DynArray[bool], idx: int, num_others: int, dbg: DynArray[bool]) {
         if idx >= buttons.length { return; };
 
-        fun xor(a: bool, b: bool) -> bool {
-            if a { if b { false } else { true } } else { if b { true } else { false } }
-        }
+        
 
-        fun is_valid(tester: DynArray[bool]) -> bool {
-            tester.all(fun(b: bool) -> bool { if b { false } else { true } })
-        }
+        
 
         var button = buttons[idx];
         // Test the non-active path first, I guess.
         // num_others is the same, as we aren't active.
-        dfs(tester, idx + 1, num_others);
+        dfs(tester, idx + 1, num_others, dbg);
         if num_others < part1_best and is_valid(tester) {
             part1_best = num_others;
+            for i in 0..dbg.length { part1_best_dbg[i] = dbg[i]; }
         }
 
         // Now, activate ourselves.
@@ -56,10 +80,13 @@ class Puzzle {
             tester[i] = xor(tester[i], button.elems[i]);
         }
         // Increase num_others by 1 here because we are active.
-        dfs(tester, idx + 1, num_others + 1);
+        dbg[idx] = true;
+        dfs(tester, idx + 1, num_others + 1, dbg);
         if num_others + 1 < part1_best and is_valid(tester) {
             part1_best = num_others + 1;
+            for i in 0..dbg.length { part1_best_dbg[i] = dbg[i]; }
         }
+        dbg[idx] = false;
         // Now reset the array.
         for i in 0..tester.length {
             tester[i] = xor(tester[i], button.elems[i]);
@@ -71,10 +98,17 @@ class Puzzle {
         // if we solve the puzzle, we store the number we got.
         var tester: DynArray[bool] = [];
         for i in 0..box.elems.length {
-            tester.push(box.elems[i]);
+            // All lights initially off.
+            tester.push(false);
         }
 
-        dfs(tester, 0, 0);
+        var dbg: DynArray[bool] = [];
+        for i in 0..buttons.length {
+            dbg.push(false);
+            part1_best_dbg.push(false);
+        }
+
+        dfs(tester, 0, 0, dbg);
     }
 }
 
@@ -161,7 +195,10 @@ fun init() {
     for i in 0..puzzles.length {
         var puzzle = puzzles[i];
         puzzle.solve_part_1();
-        //rint(puzzle.part1_best);
+        // print(puzzle.part1_best);
+        // for i in 0..puzzle.buttons.length {
+        //     print("| ", puzzle.part1_best_dbg[i]);
+        // }
 
         sum = sum + puzzle.part1_best;
     }
