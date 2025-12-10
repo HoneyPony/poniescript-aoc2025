@@ -19,6 +19,11 @@ class Box {
     var elems: DynArray[bool] = [];
 }
 
+class Puzzle {
+    var box: Box = new Box{};
+    var buttons: DynArray[Box] = [];
+}
+
 class Text {
     var text: StrBuf = "";
     var idx : int    = 0;
@@ -84,22 +89,18 @@ fun get_text() -> Text { new Text { text: read_file("input.txt") } }
 
 fun init() {
     var text = get_text();
-    var box = text.box().or_panic();
-    print("-- box --");
-    for i in 0..box.elems.length {
-        print(box.elems[i]);
+    var puzzles: DynArray[Puzzle] = [];
+    loop {
+        var box = text.box();
+        var box = box else { break; };
+
+        var puzzle = new Puzzle { box: box };
+        loop {
+            var button = text.button(box);
+            puzzle.buttons.push(button else { break; });
+        }
+        puzzles.push(puzzle);
     }
 
-    var button = text.button(box).or_panic();
-    print("-- button --");
-    for i in 0..button.elems.length {
-        print(button.elems[i]);
-    }
-
-    /// ???? Compiler error??
-    var button = text.button(box).or_panic();
-    print("-- button --");
-    for i in 0..button.elems.length {
-        print(button.elems[i]);
-    }
+    print("puzzles: ", puzzles.length);
 }
