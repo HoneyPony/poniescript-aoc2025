@@ -221,6 +221,8 @@ class Matrix {
                 test_arr[j] = 0;
             }
 
+            var large = false;
+
             for i in 0..puzzle.buttons.length {
                 var count = if i < row_count {
                     // 1x 0y 0z 0d 2e 3f | 23
@@ -244,6 +246,10 @@ class Matrix {
                     assign[i - row_count]
                 };
 
+                if count > 10000 {
+                    large = true;
+                }
+
                 for j in 0..puzzle.joltages.length {
                     test_arr[j] = test_arr[j] + count * if puzzle.buttons[i].elems[j] { 1 } else { 0 };
                 }
@@ -252,6 +258,7 @@ class Matrix {
             
             for j in 0..puzzle.joltages.length {
                 // Overshot. Whoops.
+                if large { print(test_arr[j], " ", puzzle.joltages[j]); }
                 if test_arr[j] > puzzle.joltages[j] {
                     print(j, " ", test_arr[j], " > ", puzzle.joltages[j]);
                     done = true;
@@ -259,13 +266,12 @@ class Matrix {
                 }
             }
 
-            if done {
+            // ?
+            if done or assign[idx] > 400 {
                 break;
             }
 
             dfs(puzzle, positives, assign, test_arr, idx + 1);
-
-            
 
             assign[idx] = assign[idx] + 1;
         }
@@ -309,6 +315,33 @@ class Matrix {
         }
         for i in row_count..col_count - 1 {
             assignment.push(0);
+
+            // Check each row. If we have any rows of the form
+            // 0 + -A<this> + 0 + 0 .. = -K
+            //
+            // then the assignment must at minimum be K / A, to make
+            // the other value positive.
+            for j in 0..row_count {
+                var K = rows[j].elems[col_count - 1];
+                var A = rows[j].elems[i];
+                if K < 0 and A < 0 {
+
+                    var no_others = true;
+                    for k in row_count..col_count - 1 {
+                        if k != i {
+                            if rows[j].elems[k] < 0 { no_others = false; break; }
+                        }
+                    }
+
+                    if no_others {
+                        var min =  roundit(K / A);
+                        if min > assignment[i - row_count] {
+                            assignment[i - row_count] = min;
+                        }
+                        print("assign ", i, " = ", assignment[i - row_count]);
+                    }
+                }
+            }
         }
 
         var test_arr: DynArray[float] = [];
