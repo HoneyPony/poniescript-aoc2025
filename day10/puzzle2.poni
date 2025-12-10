@@ -1,3 +1,207 @@
-fun init() {
+var ZERO    = "0"[0];
+var NINE    = "9"[0];
 
+fun is_digit(c: int) -> bool {
+    c >= ZERO and c <= NINE
+}
+
+var LBRACKET = "["[0];
+var RBRACKET = "]"[0];
+var DOT = "."[0];
+var HASH = "#"[0];
+
+var LPAREN = "("[0];
+var RPAREN = ")"[0];
+var COMMA  = ","[0];
+var LBRACE = "{"[0];
+
+class Box {
+    var elems: DynArray[bool] = [];
+}
+
+class Puzzle {
+    var box: Box = new Box{};
+    var buttons: DynArray[Box] = [];
+
+    // The best value starts at the number of elements, and then improves
+    // as we search more things.
+    var part1_best: int = box.elems.length;
+    var part1_best_dbg: DynArray[bool] = [];
+
+    fun get_dbg_str() -> StrBuf {
+        var x: StrBuf = "";
+
+        for i in 0..part1_best_dbg.length {
+            x = str(x, ", ", part1_best_dbg[i]);
+        }
+
+        x
+    }
+
+    fun same(a: bool, b: bool) -> bool {
+        if a { if b { true } else { false } } else { if b { false } else { true } }
+    }
+
+    fun xor(a: bool, b: bool) -> bool {
+        if a { if b { false } else { true } } else { if b { true } else { false } }
+    }
+
+    fun is_valid(tester: DynArray[bool]) -> bool {
+        //tester.all(fun(b: bool) -> bool { if b { false } else { true } })
+        for i in 0..box.elems.length {
+            if xor(tester[i], box.elems[i]) { return false; }
+        }
+        true
+    }
+
+    // tester we modify as we go.
+    //
+    // Idx is which of the buttons[] we use.
+    //
+    // num_others is the number of others we have activated here.
+    fun dfs(tester: DynArray[bool], idx: int, num_others: int, dbg: DynArray[bool]) {
+        if idx >= buttons.length { return; };
+
+        
+
+        
+
+        var button = buttons[idx];
+        // Test the non-active path first, I guess.
+        // num_others is the same, as we aren't active.
+        dfs(tester, idx + 1, num_others, dbg);
+        if num_others < part1_best and is_valid(tester) {
+            part1_best = num_others;
+            for i in 0..dbg.length { part1_best_dbg[i] = dbg[i]; }
+        }
+
+        // Now, activate ourselves.
+        for i in 0..tester.length {
+            tester[i] = xor(tester[i], button.elems[i]);
+        }
+        // Increase num_others by 1 here because we are active.
+        dbg[idx] = true;
+        dfs(tester, idx + 1, num_others + 1, dbg);
+        if num_others + 1 < part1_best and is_valid(tester) {
+            part1_best = num_others + 1;
+            for i in 0..dbg.length { part1_best_dbg[i] = dbg[i]; }
+        }
+        dbg[idx] = false;
+        // Now reset the array.
+        for i in 0..tester.length {
+            tester[i] = xor(tester[i], button.elems[i]);
+        }
+    }
+
+    fun solve_part_1() {
+        // Do a depth first search through box XOR buttons[]. At each level,
+        // if we solve the puzzle, we store the number we got.
+        var tester: DynArray[bool] = [];
+        for i in 0..box.elems.length {
+            // All lights initially off.
+            tester.push(false);
+        }
+
+        var dbg: DynArray[bool] = [];
+        for i in 0..buttons.length {
+            dbg.push(false);
+            part1_best_dbg.push(false);
+        }
+
+        dfs(tester, 0, 0, dbg);
+    }
+}
+
+class Text {
+    var text: StrBuf = "";
+    var idx : int    = 0;
+
+    fun box() -> Box? {
+        while idx < text.length and text[idx] != LBRACKET {
+            idx = idx + 1;
+        }
+        if idx >= text.length {
+            return nil;
+        }
+
+        // Skip the [
+        idx = idx + 1;
+        var box = new Box{};
+        while text[idx] != RBRACKET {
+            box.elems.push(text[idx] == HASH);
+            idx = idx + 1;
+        }
+
+        // Skip the ]
+        idx = idx + 1;
+
+        box
+    }
+
+    fun button(other: Box) -> Box? {
+        while text[idx] != LPAREN and text[idx] != LBRACE {
+            idx = idx + 1;
+        } 
+
+        // No more buttons.
+        if text[idx] == LBRACE { return nil; }
+
+        var box = new Box{};
+        for i in 0..other.elems.length {
+            box.elems.push(false);
+        }
+
+        idx = idx + 1; // Get rid of LPAREN
+        while text[idx] != RPAREN {
+            var number = 0;
+            while is_digit(text[idx]) {
+                number = (number * 10 + text[idx] - ZERO);
+                idx = idx + 1;
+            }
+
+            // Set the value in the button
+            box.elems[number] = true;
+
+            if text[idx] != RPAREN {
+                idx = idx + 1; // Skip comma
+            }
+        }
+
+        idx = idx + 1; // Skip rparen
+
+        box
+    }
+}
+
+fun get_text() -> Text { new Text { text: read_file("input.txt") } }
+
+fun init() {
+    var text = get_text();
+    var puzzles: DynArray[Puzzle] = [];
+    loop {
+        var box = text.box();
+        var box = box else { break; };
+
+        var puzzle = new Puzzle { box: box };
+        loop {
+            var button = text.button(box);
+            puzzle.buttons.push(button else { break; });
+        }
+        puzzles.push(puzzle);
+    }
+
+    //print("puzzles: ", puzzles.length);
+    var sum = 0;
+    for i in 0..puzzles.length {
+        var puzzle = puzzles[i];
+        puzzle.solve_part_1();
+        // print(puzzle.part1_best);
+        // for i in 0..puzzle.buttons.length {
+        //     print("| ", puzzle.part1_best_dbg[i]);
+        // }
+
+        sum = sum + puzzle.part1_best;
+    }
+
+    print(sum);
 }
