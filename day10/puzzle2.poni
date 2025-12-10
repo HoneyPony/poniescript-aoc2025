@@ -56,6 +56,12 @@ class Row {
         }
     }
 
+    fun sub(value: float) {
+        for i in 0..elems.length {
+            elems[i] = elems[i] - value;
+        }
+    }
+
     fun normalize(idx: int) {
         var coefficient = elems[idx];
         for i in 0..elems.length {
@@ -147,6 +153,36 @@ class Matrix {
         //     }
         // }
         // print("num negative: ", num_negative_rows);
+
+        print("bad matrix. creating sub-matrix and iterating...");
+        print_me();
+        var submatrix = new Matrix{};
+        var lc = row_count;
+        for i in 0..row_count {
+            var row = new Row{};
+            for j in 0..col_count {
+                print(j);
+                row.elems.push(rows[i].elems[j]);
+            }
+            submatrix.rows.push(row);
+        }
+        submatrix.print_me();
+
+        loop {
+            var rc = submatrix.rows.length;
+            var cc = submatrix.rows[0].elems.length;
+            for i in 0..rc {
+                fun the_thing(x: float) -> float { if x < 0 { 0 } else { x } }
+                var adjusted = roundit(the_thing(submatrix.rows[i].elems[cc - 1]));
+                submatrix.rows[i].sub(submatrix.rows[i].elems[cc - 1] - adjusted);
+                //submatrix.rows[i].elems[cc - 1] = ;
+            }
+
+            //submatrix.print_me();
+            submatrix.rref();
+            print("---");
+            submatrix.print_me();
+        }
 
         return -1;
     }
@@ -465,7 +501,7 @@ fun init() {
     }
 
     var sum = 0;
-    for k in 0..puzzles.length {
+    for k in 2..puzzles.length {
         var puzzle = puzzles[k];
         var matrix = new Matrix{};
         for i in 0..puzzle.joltages.length {
@@ -477,20 +513,28 @@ fun init() {
             matrix.rows.push(row);
         }
 
-        if matrix.good() {
-           // print("--- ", k, " ---");
-           // matrix.print_me();
-            matrix.rref();
-            //print(">-- ", k, " rref ---");
-            //matrix.print_me();
-            print("[good] solution: ", matrix.get_best());
+        matrix.rref();
+        var solution = matrix.get_best();
+        //print("solution: ", solution);
+
+        if solution < 0 {
+            break;
         }
-        else {
-            var combos = new Combos { from: matrix };
-            combos.initialize();
-            combos.solve();
-            print("[bad] solution: ", combos.best);
-        }
+
+        // if matrix.good() {
+        //    // print("--- ", k, " ---");
+        //    // matrix.print_me();
+        //     matrix.rref();
+        //     //print(">-- ", k, " rref ---");
+        //     //matrix.print_me();
+        //     print("[good] solution: ", matrix.get_best());
+        // }
+        // else {
+        //     var combos = new Combos { from: matrix };
+        //     combos.initialize();
+        //     combos.solve();
+        //     print("[bad] solution: ", combos.best);
+        // }
 
         //if k > 4 { break; }
 

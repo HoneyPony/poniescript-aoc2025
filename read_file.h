@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <math.h>
 
 #include "poni/poni.h"
 #include "poni/poni_glue.h"
@@ -24,4 +25,11 @@ read_file(PONI_ABI(ps_strbuf *path)) {
 
     fclose(file);
     return buf;
+}
+
+static inline
+PS_FUN()
+ps_int
+roundit(PONI_ABI(ps_float x)) {
+    return (ps_int)round(x);
 }
