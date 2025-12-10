@@ -1,6 +1,19 @@
+var ZERO    = "0"[0];
+var NINE    = "9"[0];
+
+fun is_digit(c: int) -> bool {
+    c >= ZERO and c <= NINE
+}
+
+var LBRACKET = "["[0];
 var RBRACKET = "]"[0];
 var DOT = "."[0];
 var HASH = "#"[0];
+
+var LPAREN = "("[0];
+var RPAREN = ")"[0];
+var COMMA  = ","[0];
+var LBRACE = "{"[0];
 
 class Box {
     var elems: DynArray[bool] = [];
@@ -10,7 +23,14 @@ class Text {
     var text: StrBuf = "";
     var idx : int    = 0;
 
-    fun box() -> Box {
+    fun box() -> Box? {
+        while idx < text.length and text[idx] != LBRACKET {
+            idx = idx + 1;
+        }
+        if idx >= text.length {
+            return nil;
+        }
+
         // Skip the [
         idx = idx + 1;
         var box = new Box{};
@@ -24,14 +44,62 @@ class Text {
 
         box
     }
+
+    fun button(other: Box) -> Box? {
+        while text[idx] != LPAREN and text[idx] != LBRACE {
+            idx = idx + 1;
+        } 
+
+        // No more buttons.
+        if text[idx] == LBRACE { return nil; }
+
+        var box = new Box{};
+        for i in 0..other.elems.length {
+            box.elems.push(false);
+        }
+
+        idx = idx + 1; // Get rid of LPAREN
+        while text[idx] != RPAREN {
+            var number = 0;
+            while is_digit(text[idx]) {
+                number = (number * 10 + text[idx] - ZERO);
+                idx = idx + 1;
+            }
+
+            // Set the value in the button
+            box.elems[number] = true;
+
+            if text[idx] != RPAREN {
+                idx = idx + 1; // Skip comma
+            }
+        }
+
+        idx = idx + 1; // Skip rparen
+
+        box
+    }
 }
 
 fun get_text() -> Text { new Text { text: read_file("input.txt") } }
 
 fun init() {
     var text = get_text();
-    var box = text.box();
+    var box = text.box().or_panic();
+    print("-- box --");
     for i in 0..box.elems.length {
         print(box.elems[i]);
+    }
+
+    var button = text.button(box).or_panic();
+    print("-- button --");
+    for i in 0..button.elems.length {
+        print(button.elems[i]);
+    }
+
+    /// ???? Compiler error??
+    var button = text.button(box).or_panic();
+    print("-- button --");
+    for i in 0..button.elems.length {
+        print(button.elems[i]);
     }
 }
