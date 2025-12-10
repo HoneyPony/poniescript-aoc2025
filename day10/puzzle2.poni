@@ -20,6 +20,15 @@ class Box {
     var elems: DynArray[bool] = [];
 }
 
+// return int for ==...
+fun is_even(x: int) -> int {
+    while x > 0 {
+        x = x - 2;
+    }
+    // odd
+    if x < 0 { 0 } else { 1 }
+}
+
 class Solution {
     var elems: DynArray[bool] = [];
 
@@ -70,11 +79,13 @@ class Solution {
 
         while (my_presses + num_pressed < best) and is_le(attempt, puzzle.joltages) {
             incr(attempt, button, 2);
-            //print("attempt: ", attempt[0], " ", attempt[1], "...");
+            print("[", idx, " - ", num_pressed, "] attempt: ", attempt[0], " ", attempt[1], " ", attempt[2], " ", attempt[3], " ", attempt[4], " ", attempt[5]);
             my_presses = my_presses + 1;
         }
         decr(attempt, button, 2);
         my_presses = my_presses - 1;
+
+        print("[", idx, "] starting presses: ", my_presses);
 
         // Now, while we still have any presses left, check for solutions.
         while my_presses > 0 {
@@ -104,7 +115,9 @@ class Solution {
         var num_pressed = 0;
         for i in 0..puzzle.buttons.length {
             if elems[i] {
+                print("press ", i);
                 incr(attempt, puzzle.buttons[i], 1);
+                print(" -> ", attempt[0], " ", attempt[1], " ", attempt[2], " ", attempt[3], " ", attempt[4], " ", attempt[5]);
                 num_pressed = num_pressed + 1;
             }
         }
@@ -112,6 +125,12 @@ class Solution {
         //print("attempt: ", attempt[0], " ", attempt[1], "...");
 
         // OPT: Check parity right now. If it doesn't match, give up.
+        for i in 0..attempt.length {
+            if is_even(attempt[i]) != is_even(puzzle.joltages[i]) {
+                print("joltage parity mismatch @ ", i);
+                return;
+            }
+        }
 
         dfs(attempt, puzzle, 0, num_pressed);
     }
