@@ -109,11 +109,11 @@ class Matrix {
     fun get_best() -> float {
         var col_count = rows[0].elems.length;
         var row_count = rows.length;
-        if col_count >= row_count {
+        if col_count <= row_count {
             // Best is simply the sum of the right column.
             var sum = 0.0;
             for i in 0..row_count {
-                sum = sum + rows[i].elems[row_count - 1];
+                sum = sum + rows[i].elems[col_count - 1];
             }
             return sum;
         }
@@ -351,8 +351,8 @@ fun init() {
     }
 
     var sum = 0;
-    for i in 0..puzzles.length {
-        var puzzle = puzzles[i];
+    for k in 0..puzzles.length {
+        var puzzle = puzzles[k];
         var matrix = new Matrix{};
         for i in 0..puzzle.joltages.length {
             var row = new Row{};
@@ -363,14 +363,14 @@ fun init() {
             matrix.rows.push(row);
         }
 
-        print("--- ", i, " ---");
+        print("--- ", k, " ---");
         matrix.print_me();
         matrix.rref();
-        print(">-- ", i, " rref ---");
+        print(">-- ", k, " rref ---");
         matrix.print_me();
         print("solution: ", matrix.get_best());
 
-        if i > 4 { break; };
+        if k > 4 { break; }
 
         // if puzzle.joltages.length >= puzzle.buttons.length {
         //     print("---");
