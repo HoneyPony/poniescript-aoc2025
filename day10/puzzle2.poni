@@ -95,13 +95,16 @@ class Matrix {
     fun rref() {
         var cols = rows[0].elems.length;
         var row_count = rows.length;
-        for i in 0..row_count {
+        var next_row = 0;
+        var next_col = 0;
+        while next_row < rows.length {
+            var i = next_row;
             if i >= cols { break; }
             // We want to find a row with a non-zero entry, swap it to be
             // the ith row, and then delete it from all the other rows.
             var from_idx = (0, false);
-            for j in i..row_count {
-                if rows[j].elems[i] != 0 {
+            for j in next_row..row_count {
+                if rows[j].elems[next_col] != 0 {
                     from_idx = (j, true);
                     break;
                 }
@@ -110,16 +113,18 @@ class Matrix {
             // Okay, if we have this row, then swap it, and then delete it
             // from every other row.
             if from_idx.1 {
-                swap(i, from_idx.0);
+                swap(next_row, from_idx.0);
 
-                var row = rows[i];
-                row.normalize(i);
+                var row = rows[next_row];
+                row.normalize(next_col);
                 for j in 0..row_count {
-                    if j != i {
-                        rows[j].minus(i, row);
+                    if j != next_row {
+                        rows[j].minus(next_col, row);
                     }
                 }
+                next_row = next_row + 1;
             }
+            next_col = next_col + 1;
         }
     }
 
@@ -163,7 +168,7 @@ class Matrix {
                     is_good = false; break; }
 
                 if k != puzzle.joltages[i] {
-                    //print("reject: wrong joltage @ ", k);
+                    //print("reject: wrong joltage @ ", i, " ", k " vs ", puzzle.joltages[i]);
                     is_good = false; break; }
             }
 
@@ -261,8 +266,8 @@ class Matrix {
             for j in 0..puzzle.joltages.length {
                 // Overshot. Whoops.
                 if large { print(test_arr[j], " ", puzzle.joltages[j]); }
-                if test_arr[j] + maxneg > puzzle.joltages[j] {
-                    print(j, " ", test_arr[j], " > ", puzzle.joltages[j]);
+                if test_arr[j] + maxneg > puzzle.joltages[j] + 1 {
+                    print(j, " ", test_arr[j] + maxneg, " > ", puzzle.joltages[j] + 1);
                     done = true;
                     break;
                 }
@@ -315,8 +320,8 @@ class Matrix {
         var maxneg: float = 0.0;
         for i in 0..row_count {
             positives.push(rows[i].elems[col_count - 1] >= 0);
-            if rows[i].elems[col_count - 1] < maxneg {
-                maxneg = rows[i].elems[col_count - 1];
+            if rows[i].elems[col_count - 1] < 0 {
+                maxneg = maxneg + rows[i].elems[col_count - 1];
             }
             //print("positives @ ", i " ", positives[i]);
         }
@@ -328,27 +333,27 @@ class Matrix {
             //
             // then the assignment must at minimum be K / A, to make
             // the other value positive.
-            for j in 0..row_count {
-                var K = rows[j].elems[col_count - 1];
-                var A = rows[j].elems[i];
-                if K < 0 and A < 0 {
+            // for j in 0..row_count {
+            //     var K = rows[j].elems[col_count - 1];
+            //     var A = rows[j].elems[i];
+            //     if K < 0 and A < 0 {
 
-                    var no_others = true;
-                    for k in row_count..col_count - 1 {
-                        if k != i {
-                            if rows[j].elems[k] < 0 { no_others = false; break; }
-                        }
-                    }
+            //         var no_others = true;
+            //         for k in row_count..col_count - 1 {
+            //             if k != i {
+            //                 if rows[j].elems[k] < 0 { no_others = false; break; }
+            //             }
+            //         }
 
-                    if no_others {
-                        var min =  roundit(K / A);
-                        if min > assignment[i - row_count] {
-                            assignment[i - row_count] = min;
-                        }
-                        print("assign ", i, " = ", assignment[i - row_count]);
-                    }
-                }
-            }
+            //         if no_others {
+            //             var min =  roundit(K / A);
+            //             if min > assignment[i - row_count] {
+            //                 assignment[i - row_count] = min;
+            //             }
+            //             print("assign ", i, " = ", assignment[i - row_count]);
+            //         }
+            //     }
+            // }
         }
 
         var test_arr: DynArray[float] = [];
@@ -674,9 +679,9 @@ fun init() {
         puzzles.push(puzzle);
     }
 
-    // Ones to manually check: idx 5, idx 176, idx 51, idx 175
+    // Ones to manually check: idx 5, idx 176, idx 51, idx 175, 13, 15, 16
     var sum = 0.0;
-    for k in 0..puzzles.length {
+    for k in 13..puzzles.length {
         var puzzle = puzzles[k];
         var matrix = new Matrix{};
         for i in 0..puzzle.joltages.length {
@@ -691,10 +696,10 @@ fun init() {
         matrix.rref();
         print("solve for: ", k);
         var solution = matrix.get_best(puzzle);
-        print("solution: ", matrix.got_solution, " ", solution);
+        print("solution: ", matrix.got_solution, " ", k, " -> ", solution);
 
         sum = sum + solution;
-        //break;
+        break;
 
         //break;
         // if solution < 0 {
