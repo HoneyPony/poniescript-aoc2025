@@ -139,25 +139,29 @@ class Matrix {
         var col_count = rows[0].elems.length;
         
         if idx >= assign.length {
-            var as = str("");
-            for j in 0..assign.length {
-                as = str(as, ", ", assign[j]);
-            }
+            // var as = str("");
+            // for j in 0..assign.length {
+            //     as = str(as, ", ", assign[j]);
+            // }
 
-            var ta = str("");
-            for j in 0..test_arr.length {
-                ta = str(ta, ", ", test_arr[j]);
-            }
-            print("assign: ", as, " test_arr: ", ta);
+            // var ta = str("");
+            // for j in 0..test_arr.length {
+            //     ta = str(ta, ", ", test_arr[j]);
+            // }
+            // print("assign: ", as, " test_arr: ", ta);
 
             // Test if this is a solution.
             var is_good = true;
             for i in 0..test_arr.length {
                 var k = roundit(test_arr[i]);
                 var dif = k - test_arr[i];
-                if ((dif < -0.03) or dif > 0.03) { print("reject: non-int @ ", i); is_good = false; break; }
+                if ((dif < -0.03) or dif > 0.03) {
+                    //print("reject: non-int @ ", i);
+                    is_good = false; break; }
 
-                if k != puzzle.joltages[i] { print("reject: wrong joltage @ ", k); is_good = false; break; }
+                if k != puzzle.joltages[i] {
+                    //print("reject: wrong joltage @ ", k);
+                    is_good = false; break; }
             }
 
             var sum = 0.0;
@@ -176,7 +180,7 @@ class Matrix {
                     assign[i - row_count]
                 };
 
-                print("count @ ", i, " = ", count);
+                //print("count @ ", i, " = ", count);
 
                 sum = sum + count;
 
@@ -189,7 +193,7 @@ class Matrix {
             }
 
             if is_good {
-                print("is good: sum = ", sum);
+                //print("is good: sum = ", sum);
                 if sum < best {
                     best = sum;
                     print("new best: ", best);
@@ -219,7 +223,10 @@ class Matrix {
                     for j in row_count..col_count - 1 {
                         c = c - rows[i].elems[j] * assign[j - row_count];
                     }
-                    if c < 0 and positives[i] { print("bad c @ ", i, " = ", c); done = true; }
+                    if c < 0 and positives[i] {
+                        //print("bad c @ ", i, " = ", c);
+                        done = true;
+                    }
                     c
                 }
                 else {
@@ -236,7 +243,7 @@ class Matrix {
             for j in 0..puzzle.joltages.length {
                 // Overshot. Whoops.
                 if test_arr[j] > puzzle.joltages[j] {
-                    print(j, " ", test_arr[j], " > ", puzzle.joltages[j]);
+                   // print(j, " ", test_arr[j], " > ", puzzle.joltages[j]);
                     done = true;
                     break;
                 }
@@ -285,12 +292,12 @@ class Matrix {
         // print("num negative: ", num_negative_rows);
 
         print("bad matrix. creating sub-matrix and iterating...");
-        print_me();
+        //print_me();
         var assignment: DynArray[int] = [];
         var positives: DynArray[bool] = [];
         for i in 0..row_count {
             positives.push(rows[i].elems[col_count - 1] >= 0);
-            print("positives @ ", i " ", positives[i]);
+            //print("positives @ ", i " ", positives[i]);
         }
         for i in row_count..col_count - 1 {
             assignment.push(0);
@@ -620,7 +627,7 @@ fun init() {
     }
 
     var sum = 0;
-    for k in 0..puzzles.length {
+    for k in 6..puzzles.length {
         var puzzle = puzzles[k];
         var matrix = new Matrix{};
         for i in 0..puzzle.joltages.length {
@@ -633,8 +640,12 @@ fun init() {
         }
 
         matrix.rref();
+        print("solve for: ", k);
         var solution = matrix.get_best(puzzle);
         print("solution: ", solution);
+
+        sum = sum + solution;
+
         break;
         // if solution < 0 {
         //     break;
