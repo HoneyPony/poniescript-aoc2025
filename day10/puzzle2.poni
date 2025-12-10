@@ -259,19 +259,19 @@ class Matrix {
             for j in 0..puzzle.joltages.length {
                 // Overshot. Whoops.
                 if large { print(test_arr[j], " ", puzzle.joltages[j]); }
-                if test_arr[j] > puzzle.joltages[j] {
+                if test_arr[j] > (puzzle.joltages[j] + 1) {
                     print(j, " ", test_arr[j], " > ", puzzle.joltages[j]);
                     done = true;
                     break;
                 }
             }
 
+            dfs(puzzle, positives, assign, test_arr, idx + 1);
+
             // ?
             if done or assign[idx] > 400 {
                 break;
             }
-
-            dfs(puzzle, positives, assign, test_arr, idx + 1);
 
             assign[idx] = assign[idx] + 1;
         }
@@ -686,6 +686,7 @@ fun init() {
         print("solution: ", solution);
 
         sum = sum + solution;
+        //break;
 
         //break;
         // if solution < 0 {
