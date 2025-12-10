@@ -237,7 +237,7 @@ class Matrix {
             return;
         }
 
-        var original = assign[idx];
+        var original = assign[idx].val;
         
 
         var reset: DynArray[float] = [];
@@ -285,6 +285,7 @@ class Matrix {
                         var pr = pivots[j].row;
                         for a in 0..assign.length {
                             count = count - rows[pr].elems[assign[a].col] * assign[a].val; 
+                            //print("count: @ ", count);
                         }
                     }
                 }
@@ -329,7 +330,7 @@ class Matrix {
             test_arr[j] = reset[j];
         }
 
-        assign[idx] = original;
+        assign[idx].val = original;
     }
 
     fun get_best(puzzle: Puzzle) -> float {
