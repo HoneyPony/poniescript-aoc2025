@@ -80,6 +80,17 @@ class Row {
     }
 }
 
+class Assign {
+    var col: int = 0;
+    var val: int = 0;
+}
+
+class Pivot {
+    var val: float = 0;
+    var col: int = 0;
+    var row: int = 0;
+}
+
 class Matrix {
     var rows: DynArray[Row] = [];
 
@@ -140,7 +151,7 @@ class Matrix {
         col_count <= row_count
     }
 
-    fun dfs(maxneg: float, puzzle: Puzzle, positives: DynArray[bool], assign: DynArray[int], test_arr: DynArray[float], idx: int) {
+    fun dfs(maxneg: float, puzzle: Puzzle, positives: DynArray[bool], pivots: DynArray[Pivot], assign: DynArray[Assign], test_arr: DynArray[float], idx: int) {
         var row_count = rows.length;
         var col_count = rows[0].elems.length;
 
@@ -174,19 +185,34 @@ class Matrix {
 
             var sum = 0.0;
             for i in 0..puzzle.buttons.length {
-                var count = if i < row_count {
-                    // 1x 0y 0z 0d 2e 3f | 23
-                    // -> x = 23 - 2e - 3f
-                    var c = rows[i].elems[col_count - 1];
-                    for j in row_count..col_count - 1 {
-                        c = c - rows[i].elems[j] * assign[j - row_count];
+                var count = 0.0; //rows[i].elems[col_count - 1];
+                for j in 0..pivots.length {
+                    if i == pivots[j].col {
+                        count = count + pivots[j].val;
+                        var pr = pivots[j].row;
+                        for a in 0..assign.length {
+                            count = count - rows[pr].elems[assign[a].col] * assign[a].val; 
+                        }
                     }
-                    c
                 }
-                else {
-                    // Read this counter from the assignment we're trying.
-                    assign[i - row_count]
-                };
+                for j in 0..assign.length {
+                    if i == assign[j].col {
+                        count = assign[j].val;
+                    }
+                }
+                // var count = if i < row_count {
+                //     // 1x 0y 0z 0d 2e 3f | 23
+                //     // -> x = 23 - 2e - 3f
+                //     var c = rows[i].elems[col_count - 1];
+                //     for j in row_count..col_count - 1 {
+                //         c = c - rows[i].elems[j] * assign[j - row_count];
+                //     }
+                //     c
+                // }
+                // else {
+                //     // Read this counter from the assignment we're trying.
+                //     assign[i - row_count]
+                // };
 
                 //print("count @ ", i, " = ", count);
 
@@ -231,27 +257,43 @@ class Matrix {
             var large = false;
 
             for i in 0..puzzle.buttons.length {
-                var count = if i < row_count {
-                    // 1x 0y 0z 0d 2e 3f | 23
-                    // -> x = 23 - 2e - 3f
-                    var c = rows[i].elems[col_count - 1];
-                    for j in row_count..col_count - 1 {
-                        c = c - rows[i].elems[j] * assign[j - row_count];
-                    }
-                    if c < 0 and positives[i] {
+                // var count = if i < row_count {
+                //     // 1x 0y 0z 0d 2e 3f | 23
+                //     // -> x = 23 - 2e - 3f
+                //     var c = rows[i].elems[col_count - 1];
+                //     for j in row_count..col_count - 1 {
+                //         c = c - rows[i].elems[j] * assign[j - row_count];
+                //     }
+                //     if c < 0 and positives[i] {
                         
-                        //print("bad c @ ", i, " = ", c);
-                        for j in row_count..col_count - 1{
-                            //print("assign @ ", j, " ", assign[j - row_count]);
+                //         //print("bad c @ ", i, " = ", c);
+                //         for j in row_count..col_count - 1{
+                //             //print("assign @ ", j, " ", assign[j - row_count]);
+                //         }
+                //         done = true;
+                //     }
+                //     c
+                // }
+                // else {
+                //     // Read this counter from the assignment we're trying.
+                //     assign[i - row_count]
+                // };
+                var count = 0.0; //rows[i].elems[col_count - 1];
+                for j in 0..pivots.length {
+                    if i == pivots[j].col {
+                        count = count + pivots[j].val;
+                        var pr = pivots[j].row;
+                        for a in 0..assign.length {
+                            count = count - rows[pr].elems[assign[a].col] * assign[a].val; 
                         }
-                        done = true;
                     }
-                    c
                 }
-                else {
-                    // Read this counter from the assignment we're trying.
-                    assign[i - row_count]
-                };
+                for j in 0..assign.length {
+                    if i == assign[j].col {
+                        count = assign[j].val;
+                    }
+                }
+                
 
                 if count > 10000 {
                     large = true;
@@ -273,14 +315,14 @@ class Matrix {
                 }
             }
 
-            dfs(maxneg, puzzle, positives, assign, test_arr, idx + 1);
+            dfs(maxneg, puzzle, positives, pivots, assign, test_arr, idx + 1);
 
             // ?
-            if done or assign[idx] > 400 {
+            if done or assign[idx].val > 400 {
                 break;
             }
 
-            assign[idx] = assign[idx] + 1;
+            assign[idx].val = assign[idx].val + 1;
         }
 
         for j in 0..puzzle.joltages.length {
@@ -315,7 +357,8 @@ class Matrix {
 
         print("bad matrix. creating sub-matrix and iterating...");
         print_me();
-        var assignment: DynArray[int] = [];
+        var assignments: DynArray[Assign] = [];
+        var pivots: DynArray[Pivot] = [];
         var positives: DynArray[bool] = [];
         var maxneg: float = 0.0;
         for i in 0..row_count {
@@ -325,43 +368,69 @@ class Matrix {
             }
             //print("positives @ ", i " ", positives[i]);
         }
-        for i in row_count..col_count - 1 {
-            assignment.push(0);
 
-            // Check each row. If we have any rows of the form
-            // 0 + -A<this> + 0 + 0 .. = -K
-            //
-            // then the assignment must at minimum be K / A, to make
-            // the other value positive.
-            // for j in 0..row_count {
-            //     var K = rows[j].elems[col_count - 1];
-            //     var A = rows[j].elems[i];
-            //     if K < 0 and A < 0 {
-
-            //         var no_others = true;
-            //         for k in row_count..col_count - 1 {
-            //             if k != i {
-            //                 if rows[j].elems[k] < 0 { no_others = false; break; }
-            //             }
-            //         }
-
-            //         if no_others {
-            //             var min =  roundit(K / A);
-            //             if min > assignment[i - row_count] {
-            //                 assignment[i - row_count] = min;
-            //             }
-            //             print("assign ", i, " = ", assignment[i - row_count]);
-            //         }
-            //     }
-            // }
+        var na_col = 0;
+        var na_row = 0;
+        while na_row < row_count {
+            if rows[na_row].elems[na_col] == 1 {
+                pivots.push(new Pivot { row: na_row, col: na_col, val: rows[na_row].elems[col_count - 1] });
+                na_row = na_row + 1;
+                na_col = na_col + 1;
+            }
+            else {
+                while rows[na_row].elems[na_col] != 1 {
+                    print("assignment column: (a) ", na_col);
+                    assignments.push(new Assign { col: na_col, val: 0 });
+                    na_col = na_col + 1;
+                }
+                na_row = na_row + 1;
+            }
         }
+
+        // Now, push assignments until we run out of columns.
+        while na_col < col_count - 1 {
+            print("assignment column: (b) ", na_col);
+            assignments.push(new Assign { col: na_col, val: 0 });
+            na_col = na_col + 1;
+        }
+
+        // for i in row_count..col_count - 1 {
+        //     assignment.push(0);
+
+        //     // Check each row. If we have any rows of the form
+        //     // 0 + -A<this> + 0 + 0 .. = -K
+        //     //
+        //     // then the assignment must at minimum be K / A, to make
+        //     // the other value positive.
+        //     // for j in 0..row_count {
+        //     //     var K = rows[j].elems[col_count - 1];
+        //     //     var A = rows[j].elems[i];
+        //     //     if K < 0 and A < 0 {
+
+        //     //         var no_others = true;
+        //     //         for k in row_count..col_count - 1 {
+        //     //             if k != i {
+        //     //                 if rows[j].elems[k] < 0 { no_others = false; break; }
+        //     //             }
+        //     //         }
+
+        //     //         if no_others {
+        //     //             var min =  roundit(K / A);
+        //     //             if min > assignment[i - row_count] {
+        //     //                 assignment[i - row_count] = min;
+        //     //             }
+        //     //             print("assign ", i, " = ", assignment[i - row_count]);
+        //     //         }
+        //     //     }
+        //     // }
+        // }
 
         var test_arr: DynArray[float] = [];
         
         for i in 0..puzzle.joltages.length { test_arr.push(0); }
 
-        print("assignment.len: ", assignment.length);
-        dfs(maxneg, puzzle, positives, assignment, test_arr, 0);
+        //print("assignment.len: ", assignment.length);
+        dfs(maxneg, puzzle, positives, pivots, assignments, test_arr, 0);
 
         return best;
     }
