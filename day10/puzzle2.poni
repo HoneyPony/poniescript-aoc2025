@@ -29,6 +29,20 @@ fun is_even(x: int) -> int {
     if x < 0 { 0 } else { 1 }
 }
 
+// class ExtraConstraints {
+//     var elems: DynArray[(DynArray[int], float)] = [];
+
+//     var best = 100000000000;
+//     var best_assignment: DynArray[(int, float)] = [];
+
+//     fun solve() {
+//         var assignment: DynArray[(int, float)] = [];
+//         for i in 0..elems.length {
+
+//         }
+//     }
+// }
+
 class Row {
     var elems: DynArray[float] = [];
 
@@ -106,10 +120,16 @@ class Matrix {
         }
     }
 
+    fun good() -> bool {
+        var col_count = rows[0].elems.length;
+        var row_count = rows.length;
+        col_count <= row_count
+    }
+
     fun get_best() -> float {
         var col_count = rows[0].elems.length;
         var row_count = rows.length;
-        if col_count <= row_count {
+        if (col_count - 1) <= row_count {
             // Best is simply the sum of the right column.
             var sum = 0.0;
             for i in 0..row_count {
@@ -119,7 +139,101 @@ class Matrix {
         }
 
         // TODO:
-        0
+
+        // var num_negative_rows = 0;
+        // for i in 0..row_count {
+        //     if rows[i].elems[col_count - 1] < 0 {
+        //         num_negative_rows = num_negative_rows + 1;
+        //     }
+        // }
+        // print("num negative: ", num_negative_rows);
+
+        return -1;
+    }
+}
+
+class Combos {
+    var from: Matrix = new Matrix{};
+    var to: Matrix = new Matrix{};
+
+    var best: float = 1000000000.0;
+
+    fun initialize() {
+        for i in 0..from.rows.length {
+            var row = new Row{};
+            // Make a square matrix, plus one column.
+            for i in 0..from.rows.length + 1 {
+                row.elems.push(0);
+            }
+            to.rows.push(row);
+        }
+
+        print("to dims: ", to.rows.length, " ", to.rows[0].elems.length);
+    }
+
+    fun dbg(skip_cols: DynArray[int]) {
+        var s = str("");
+        for i in 0..skip_cols.length {
+            s = str(s, ", ", skip_cols[i]);
+        }
+        print("doing combo: [", s, "]");
+    }
+
+    fun comb(skip_cols: DynArray[int], nest: int, prev: int) {
+        var cols = from.rows[0].elems.length;
+
+        fun should_not_skip(skip_cols: DynArray[int], c: int) -> bool {
+            for i in 0..skip_cols.length {
+                if skip_cols[i] == c { return false; }
+            }
+            true
+        }
+
+        if nest >= skip_cols.length {
+            // Actually do the combination.
+            dbg(skip_cols);
+
+            for row in 0..from.rows.length {
+                var col_write = 0;
+                for col in 0..cols {
+                    if should_not_skip(skip_cols, col) {
+                        //print("row, col_write: ", row, " ", col_write);
+                        to.rows[row].elems[col_write] = from.rows[row].elems[col];
+                        col_write = col_write + 1;
+                    }
+                }
+            }
+
+            to.rref();
+            to.print_me();
+            var best_ = to.get_best();
+
+            print(" -> ", best_);
+
+            if best_ < 0 {
+                print("uh oh");
+            }
+
+            if best_ < best {
+                best = best_;
+            }
+
+            return;
+        }
+
+        for i in prev..cols - 1 {
+            skip_cols[nest] = i;
+            comb(skip_cols, nest + 1, i + 1);
+        }
+    }
+
+    fun solve() {
+        var skip_cols: DynArray[int] = [];
+        for i in 0..(from.rows[0].elems.length - to.rows[0].elems.length) {
+            skip_cols.push(0);
+        }
+
+        comb(skip_cols, 0, 0);
     }
 }
 
@@ -363,14 +477,22 @@ fun init() {
             matrix.rows.push(row);
         }
 
-        print("--- ", k, " ---");
-        matrix.print_me();
-        matrix.rref();
-        print(">-- ", k, " rref ---");
-        matrix.print_me();
-        print("solution: ", matrix.get_best());
+        if matrix.good() {
+           // print("--- ", k, " ---");
+           // matrix.print_me();
+            matrix.rref();
+            //print(">-- ", k, " rref ---");
+            //matrix.print_me();
+            print("[good] solution: ", matrix.get_best());
+        }
+        else {
+            var combos = new Combos { from: matrix };
+            combos.initialize();
+            combos.solve();
+            print("[bad] solution: ", combos.best);
+        }
 
-        if k > 4 { break; }
+        //if k > 4 { break; }
 
         // if puzzle.joltages.length >= puzzle.buttons.length {
         //     print("---");
