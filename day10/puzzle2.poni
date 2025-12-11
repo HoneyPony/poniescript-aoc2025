@@ -43,6 +43,8 @@ fun is_even(x: int) -> int {
 //     }
 // }
 
+var dfs_calls = 0;
+
 class Row {
     var elems: DynArray[float] = [];
 
@@ -185,6 +187,8 @@ class Matrix {
     }
 
     fun dfs(maxneg: float, puzzle: Puzzle, positives: DynArray[bool], pivots: DynArray[Pivot], assign: DynArray[Assign], test_arr: DynArray[float], idx: int) {
+        dfs_calls = dfs_calls + 1;
+        
         var row_count = rows.length;
         var col_count = rows[0].elems.length;
 
@@ -894,4 +898,5 @@ fun init() {
     }
 
     print("sum: ", sum, "; sum2: ", sum2);
+    print("dfs calls: ", dfs_calls);
 }
