@@ -3,6 +3,21 @@ var NL = "\n"[0];
 
 class Node {
     var edges: DynArray[Node] = [];
+    var hash: int = 0;
+
+
+    fun bfs_to(target: Node) -> int {
+        // We are the node.
+        if target.hash == hash {
+            return 1;
+        }
+
+        var sum = 0;
+        for edge in 0..edges.length {
+            sum = sum + edges[edge].bfs_to(target);
+        }
+        sum
+    }
 }
 
 class Text {
@@ -45,7 +60,7 @@ class Text {
         }
 
         var val = hash();
-        var node = new Node{};
+        var node = new Node { hash: val };
 
         while text[idx] != NL { idx = idx + 1; }
 
@@ -74,8 +89,11 @@ fun init() {
     var nodes: DynArray[(int, Node)] = [];
     var text = get_text();
 
-    var out = new Node{};
-    nodes.push((do_hash("out"), out));
+    var out = new Node{ hash: do_hash("out") };
+    nodes.push((out.hash, out));
+
+    var you_hash = do_hash("you");
+    var you: Node? = nil;
 
     fun find_node(nodes: DynArray[(int, Node)], x: int) -> Node? {
         for i in 0..nodes.length {
@@ -94,6 +112,10 @@ fun init() {
         }
 
         nodes.push((next.0, next.1.or_panic()));
+
+        if next.0 == you_hash {
+            you = next.1;
+        }
     }
 
     // Second pass: read connections
@@ -109,8 +131,11 @@ fun init() {
             if next_edge < 0 { break; }
             node.edges.push(find_node(nodes, next_edge).or_panic());
         }
-        print("node has ", node.edges.length, " edges");
+        //print("node has ", node.edges.length, " edges");
     }
 
-    print("got ", nodes.length, " nodes");
+    //print("got ", nodes.length, " nodes");
+
+    var you = you.or_panic();
+    print(you.bfs_to(out));
 }
