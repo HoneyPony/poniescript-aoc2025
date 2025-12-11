@@ -812,7 +812,7 @@ fun init() {
     // Ones to manually check: idx 5, idx 176, idx 51, idx 175, 13, 15, 16
     var sum = 0;
     var sum2 = 0;
-    for k in 156..puzzles.length {
+    for k in 0..puzzles.length {
         var puzzle = puzzles[k];
         var matrix = new Matrix{};
         for i in 0..puzzle.joltages.length {
@@ -846,7 +846,7 @@ fun init() {
         print("solution= ", solstr);
 
         sum = sum + roundit(solution);
-        break;
+        //break;
         //if k > 5 { break; }
 
         //break;
