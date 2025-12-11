@@ -373,7 +373,7 @@ class Matrix {
 
         var na_col = 0;
         var na_row = 0;
-        while na_row < row_count and na_col < col_count {
+        while na_row < row_count and na_col < col_count - 1 {
             if rows[na_row].elems[na_col] == 1 {
                 print("new pivot: ", na_row, " ", na_col);
                 pivots.push(new Pivot { row: na_row, col: na_col, val: rows[na_row].elems[col_count - 1] });
@@ -381,7 +381,7 @@ class Matrix {
                 na_col = na_col + 1;
             }
             else {
-                while na_row < row_count and na_col < col_count and rows[na_row].elems[na_col] != 1 {
+                while na_row < row_count and na_col < col_count - 1 and rows[na_row].elems[na_col] != 1 {
                     print("assignment column: (a) ", na_col);
                     assignments.push(new Assign { col: na_col, val: 0 });
                     na_col = na_col + 1;
@@ -756,7 +756,7 @@ fun init() {
 
     // Ones to manually check: idx 5, idx 176, idx 51, idx 175, 13, 15, 16
     var sum = 0.0;
-    for k in 0..puzzles.length {
+    for k in 7..puzzles.length {
         var puzzle = puzzles[k];
         var matrix = new Matrix{};
         for i in 0..puzzle.joltages.length {
@@ -774,7 +774,7 @@ fun init() {
         print("solution: ", matrix.got_solution, " ", k, " -> ", solution);
 
         sum = sum + solution;
-        //break;
+        break;
 
         //break;
         // if solution < 0 {
