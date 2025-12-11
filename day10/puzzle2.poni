@@ -78,6 +78,16 @@ class Row {
 
         print("[", s, "]");
     }
+
+    fun print_me2() {
+        var s = str("");
+        for i in 0..elems.length {
+            if i > 0 { s = str(s, ", "); }
+            s = str(s, roundit(elems[i]));
+        }
+
+        print("[", s, "]");
+    }
 }
 
 class Assign {
@@ -112,6 +122,9 @@ class Matrix {
         var next_row = 0;
         var next_col = 0;
         while next_row < rows.length {
+            print("----------");
+            print_me2();
+            
             var i = next_row;
             if i >= cols - 1 { break; }
             if next_col >= cols - 1 { break; }
@@ -119,7 +132,12 @@ class Matrix {
             // the ith row, and then delete it from all the other rows.
             var from_idx = (0, false);
             for j in next_row..row_count {
-                if rows[j].elems[next_col] != 0 {
+                fun not_close_to_zero(val: float) -> bool {
+                    val > 0.0001 or val < -0.0001
+                }
+                var val = rows[j].elems[next_col];
+                if not_close_to_zero(val) {
+                    print(j, " ", next_col, " ", val, " ", val * 1000.0, " ", not_close_to_zero(val), " ", val > 0.03, " ", val < 0.03);
                     from_idx = (j, true);
                     break;
                 }
@@ -128,7 +146,9 @@ class Matrix {
             // Okay, if we have this row, then swap it, and then delete it
             // from every other row.
             if from_idx.1 {
+                print("swap --- ", next_row, " ", from_idx.0);
                 swap(next_row, from_idx.0);
+                print_me2();
 
                 var row = rows[next_row];
                 row.normalize(next_col);
@@ -140,12 +160,21 @@ class Matrix {
                 next_row = next_row + 1;
             }
             next_col = next_col + 1;
+
+            
+            
         }
     }
 
     fun print_me() {
         for i in 0..rows.length {
             rows[i].print_me();
+        }
+    }
+
+    fun print_me2() {
+        for i in 0..rows.length {
+            rows[i].print_me2();
         }
     }
 
@@ -159,7 +188,7 @@ class Matrix {
         var row_count = rows.length;
         var col_count = rows[0].elems.length;
 
-        print(assign[0].val);//, " ", assign[1], " ", idx >= assign.length);
+        //print(assign[0].val);//, " ", assign[1], " ", idx >= assign.length);
         
         if idx >= assign.length {
             // var as = str("");
