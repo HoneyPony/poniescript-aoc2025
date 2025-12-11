@@ -110,7 +110,8 @@ class Matrix {
         var next_col = 0;
         while next_row < rows.length {
             var i = next_row;
-            if i >= cols { break; }
+            if i >= cols - 1 { break; }
+            if next_col >= cols - 1 { break; }
             // We want to find a row with a non-zero entry, swap it to be
             // the ith row, and then delete it from all the other rows.
             var from_idx = (0, false);
@@ -380,7 +381,7 @@ class Matrix {
                 na_col = na_col + 1;
             }
             else {
-                while rows[na_row].elems[na_col] != 1 {
+                while na_row < row_count and na_col < col_count and rows[na_row].elems[na_col] != 1 {
                     print("assignment column: (a) ", na_col);
                     assignments.push(new Assign { col: na_col, val: 0 });
                     na_col = na_col + 1;
@@ -393,11 +394,11 @@ class Matrix {
         }
 
         // Now, push assignments until we run out of columns.
-        while na_col < col_count - 1 {
-            print("assignment column: (b) ", na_col);
-            assignments.push(new Assign { col: na_col, val: 0 });
-            na_col = na_col + 1;
-        }
+        // while na_col < col_count - 1 {
+        //     print("assignment column: (b) ", na_col);
+        //     assignments.push(new Assign { col: na_col, val: 0 });
+        //     na_col = na_col + 1;
+        // }
 
         // for i in row_count..col_count - 1 {
         //     assignment.push(0);
@@ -755,7 +756,7 @@ fun init() {
 
     // Ones to manually check: idx 5, idx 176, idx 51, idx 175, 13, 15, 16
     var sum = 0.0;
-    for k in 13..puzzles.length {
+    for k in 0..puzzles.length {
         var puzzle = puzzles[k];
         var matrix = new Matrix{};
         for i in 0..puzzle.joltages.length {
@@ -773,7 +774,7 @@ fun init() {
         print("solution: ", matrix.got_solution, " ", k, " -> ", solution);
 
         sum = sum + solution;
-        break;
+        //break;
 
         //break;
         // if solution < 0 {
