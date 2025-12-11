@@ -351,23 +351,23 @@ class Matrix {
 
         var col_count = rows[0].elems.length;
         var row_count = rows.length;
-        if (col_count - 1) < row_count {
-            print_me();
-            // Best is simply the sum of the right column.
-            print(col_count, " ", row_count, " ", best_counts.length);
-            var sum = 0.0;
-            for i in 0..col_count - 1 {
-                sum = sum + rows[i].elems[col_count - 1];
-                best_counts[i] = roundit(rows[i].elems[col_count - 1]);
+        // if (col_count - 1) < row_count {
+        //     print_me();
+        //     // Best is simply the sum of the right column.
+        //     print(col_count, " ", row_count, " ", best_counts.length);
+        //     var sum = 0.0;
+        //     for i in 0..col_count - 1 {
+        //         sum = sum + rows[i].elems[col_count - 1];
+        //         best_counts[i] = roundit(rows[i].elems[col_count - 1]);
 
-                var at = rows[i].elems[col_count - 1];
-                if at < 0 {
-                    print("uh oh: ", i, " => ", at);
-                }
-            }
-            got_solution = true;
-            return sum;
-        }
+        //         var at = rows[i].elems[col_count - 1];
+        //         if at < 0 {
+        //             print("uh oh: ", i, " => ", at);
+        //         }
+        //     }
+        //     got_solution = true;
+        //     return sum;
+        // }
 
         // TODO:
 
