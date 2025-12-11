@@ -1,3 +1,176 @@
-fun init() {
+var A = "a"[0];
+var NL = "\n"[0];
 
+var count = 0;
+var count2 = 0;
+
+class Node {
+    var edges: DynArray[Node] = [];
+    var hash: int = 0;
+
+    fun bfs_to(target: Node, needs: (Node, Node), has: (bool, bool), depth: int) -> int {
+        count = count + 1;
+        count2 = count2 + 1;
+        if count2 >= 100000 {
+            print(count);
+            count2 = count2 - 100000;
+        }
+
+        if depth > 1000 {
+            print("reached depth 1000. this means a cycle. giving up.");
+            return 1;
+        }
+
+        // We are the node.
+        if target.hash == hash {
+            return 1;
+        }
+
+        if hash == needs.0.hash {
+            has.0 = true;
+        }
+        if hash == needs.1.hash {
+            has.1 = true;
+        }
+
+        var sum = 0;
+        for edge in 0..edges.length {
+            sum = sum + edges[edge].bfs_to(target, needs, has, depth + 1);
+        }
+        sum
+    }
+}
+
+class Text {
+    var text: StrBuf = "";
+    var idx : int = 0;
+
+    fun at_end() -> bool {
+        idx >= text.length
+    }
+
+    fun hash() -> int {
+        var result = 0;
+        for i in 0..3 {
+            var x = text[idx] - A;
+            result = (result * 26) + x;
+            idx = idx + 1;
+        }
+        result
+    }
+
+    fun line_hash() -> int {
+        if text[idx] == NL {
+            idx = idx + 1;
+            return -1;
+        }
+
+        var x = hash();
+        if text[idx] != NL { idx = idx + 1; };
+
+        x
+    }
+
+    fun skip_colon() {
+        idx = idx + 2;
+    }
+
+    fun node_and_skip() -> (int, Node?) {
+        if idx >= text.length {
+            return (-1, nil);
+        }
+
+        var val = hash();
+        var node = new Node { hash: val };
+
+        while text[idx] != NL { idx = idx + 1; }
+
+        idx = idx + 1; // skip newline
+
+        return (val, node);
+    }
+}
+
+fun get_text() -> Text {
+    new Text {
+        text: read_file("input.txt")
+    }
+}
+
+fun do_hash(s: StrConst) -> int {
+    var result = 0;
+    for i in 0..3 {
+        var x = s[i] - A;
+        result = (result * 26) + x;
+    }
+    result
+}
+
+fun init() {
+    var nodes: DynArray[(int, Node)] = [];
+    var text = get_text();
+
+    var out = new Node{ hash: do_hash("out") };
+    nodes.push((out.hash, out));
+
+    var you_hash = do_hash("svr");
+    var you: Node? = nil;
+
+    var fft_hash = do_hash("fft");
+    var fft: Node? = nil;
+
+    var dac_hash = do_hash("dac");
+    var dac: Node? = nil;
+
+    fun find_node(nodes: DynArray[(int, Node)], x: int) -> Node? {
+        for i in 0..nodes.length {
+            if nodes[i].0 == x {
+                return nodes[i].1;
+            }
+        }
+
+        nil
+    }
+
+    loop {
+        var next = text.node_and_skip();
+        if next.0 < 0 {
+            break;
+        }
+
+        nodes.push((next.0, next.1.or_panic()));
+
+        if next.0 == you_hash {
+            you = next.1;
+        }
+        if next.0 == fft_hash {
+            fft = next.1;
+        }
+        if next.0 == dac_hash {
+            dac = next.1;
+        }
+    }
+
+    // Second pass: read connections
+    text.idx = 0;
+    loop {
+        if text.at_end() { break; }
+        var next_id = text.hash();
+        text.skip_colon();
+
+        var node = find_node(nodes, next_id).or_panic();
+        loop {
+            var next_edge = text.line_hash();
+            if next_edge < 0 { break; }
+            node.edges.push(find_node(nodes, next_edge).or_panic());
+        }
+        //print("node has ", node.edges.length, " edges");
+    }
+
+    //print("got ", nodes.length, " nodes");
+
+    var you = you.or_panic();
+    var dac = dac.or_panic();
+    var fft = fft.or_panic();
+    print(you.bfs_to(out, (dac, fft), (false, false), 0));
 }
