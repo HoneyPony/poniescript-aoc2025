@@ -122,8 +122,8 @@ class Matrix {
         var next_row = 0;
         var next_col = 0;
         while next_row < rows.length {
-            print("----------");
-            print_me2();
+            //print("----------");
+            //print_me2();
             
             var i = next_row;
             if i >= cols - 1 { break; }
@@ -133,11 +133,11 @@ class Matrix {
             var from_idx = (0, false);
             for j in next_row..row_count {
                 fun not_close_to_zero(val: float) -> bool {
-                    val > 0.0001 or val < -0.0001
+                    val > 0.0000001 or val < -0.0000001
                 }
                 var val = rows[j].elems[next_col];
                 if not_close_to_zero(val) {
-                    print(j, " ", next_col, " ", val, " ", val * 1000.0, " ", not_close_to_zero(val), " ", val > 0.03, " ", val < 0.03);
+                    //print(j, " ", next_col, " ", val, " ", val * 1000.0, " ", not_close_to_zero(val), " ", val > 0.03, " ", val < 0.03);
                     from_idx = (j, true);
                     break;
                 }
@@ -146,9 +146,9 @@ class Matrix {
             // Okay, if we have this row, then swap it, and then delete it
             // from every other row.
             if from_idx.1 {
-                print("swap --- ", next_row, " ", from_idx.0);
+                //print("swap --- ", next_row, " ", from_idx.0);
                 swap(next_row, from_idx.0);
-                print_me2();
+                //print_me2();
 
                 var row = rows[next_row];
                 row.normalize(next_col);
@@ -550,7 +550,7 @@ class Combos {
             }
 
             to.rref();
-            to.print_me();
+            //to.print_me();
             var best_ = 0; //to.get_best(puzzle);
 
             print(" -> ", best_);
