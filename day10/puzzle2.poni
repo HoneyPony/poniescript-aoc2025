@@ -283,14 +283,6 @@ class Matrix {
         }
 
         var original = assign[idx].val;
-        
-
-        var reset: DynArray[float] = [];
-        for i in 0..test_arr.length { reset.push(0); }
-
-        for i in 0..test_arr.length {
-            reset[i] = test_arr[i];
-        }
 
         loop {
             var done = false;
@@ -369,10 +361,6 @@ class Matrix {
             }
 
             assign[idx].val = assign[idx].val + 1;
-        }
-
-        for j in 0..puzzle.joltages.length {
-            test_arr[j] = reset[j];
         }
 
         assign[idx].val = original;
