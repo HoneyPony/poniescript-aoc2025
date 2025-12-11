@@ -175,16 +175,18 @@ class Matrix {
 
             // Test if this is a solution.
             var is_good = true;
-            for i in 0..test_arr.length {
-                var k = roundit(test_arr[i]);
-                var dif = k - test_arr[i];
-                if ((dif < -0.03) or dif > 0.03) {
-                    //print("reject: non-int @ ", i);
-                    is_good = false; break; }
+            if idx > 0 {
+                for i in 0..test_arr.length {
+                    var k = roundit(test_arr[i]);
+                    var dif = k - test_arr[i];
+                    if ((dif < -0.03) or dif > 0.03) {
+                        //print("reject: non-int @ ", i);
+                        is_good = false; break; }
 
-                if k != puzzle.joltages[i] {
-                    //print("reject: wrong joltage @ ", i, " ", k " vs ", puzzle.joltages[i]);
-                    is_good = false; break; }
+                    if k != puzzle.joltages[i] {
+                        //print("reject: wrong joltage @ ", i, " ", k " vs ", puzzle.joltages[i]);
+                        is_good = false; break; }
+                }
             }
 
             var sum = 0.0;
