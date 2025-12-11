@@ -1,20 +1,31 @@
 var A = "a"[0];
 var NL = "\n"[0];
 
+var count = 0;
+
 class Node {
     var edges: DynArray[Node] = [];
     var hash: int = 0;
 
+    fun bfs_to(target: Node, needs: (Node, Node), has: (bool, bool)) -> int {
+        //count = count + 1;
+        //print(count);
 
-    fun bfs_to(target: Node) -> int {
         // We are the node.
         if target.hash == hash {
             return 1;
         }
 
+        if hash == needs.0.hash {
+            has.0 = true;
+        }
+        if hash == needs.1.hash {
+            has.1 = true;
+        }
+
         var sum = 0;
         for edge in 0..edges.length {
-            sum = sum + edges[edge].bfs_to(target);
+            sum = sum + edges[edge].bfs_to(target, needs, has);
         }
         sum
     }
@@ -92,8 +103,14 @@ fun init() {
     var out = new Node{ hash: do_hash("out") };
     nodes.push((out.hash, out));
 
-    var you_hash = do_hash("you");
+    var you_hash = do_hash("svr");
     var you: Node? = nil;
+
+    var fft_hash = do_hash("fft");
+    var fft: Node? = nil;
+
+    var dac_hash = do_hash("dac");
+    var dac: Node? = nil;
 
     fun find_node(nodes: DynArray[(int, Node)], x: int) -> Node? {
         for i in 0..nodes.length {
@@ -116,6 +133,12 @@ fun init() {
         if next.0 == you_hash {
             you = next.1;
         }
+        if next.0 == fft_hash {
+            fft = next.1;
+        }
+        if next.0 == dac_hash {
+            dac = next.1;
+        }
     }
 
     // Second pass: read connections
@@ -137,5 +160,7 @@ fun init() {
     //print("got ", nodes.length, " nodes");
 
     var you = you.or_panic();
-    print(you.bfs_to(out));
+    var dac = dac.or_panic();
+    var fft = fft.or_panic();
+    print(you.bfs_to(out, (dac, fft), (false, false)));
 }
