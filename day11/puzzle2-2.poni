@@ -12,20 +12,26 @@ class Node {
     var edges: DynArray[Node] = [];
     var hash: int = 0;
 
-    var bfs_results: DynArray[(Node, Node, bool, vec2i)] = [];
+    var bfs_results: DynArray[(Node, Node, Node, bool, bool, int)] = [];
+    //var bfs_results: (bool, int) = (false, 0);
 
-    fun cache(target: Node, needs: Node, has: bool, value: vec2i) {
-        bfs_results.push((target, needs, has, value));
+    fun cache(target: Node, needs: (Node, Node), has: (bool, bool), value: int) {
+        bfs_results.push((target, needs.0, needs.1, has.0, has.1, value));
     }
 
-    fun bfs_to(target: Node, needs: Node, has: bool, depth: int) -> (int, int) {
+    fun bfs_to(target: Node, needs: (Node, Node), has: (bool, bool), depth: int) -> int {
         // First check memorization.
         for i in 0..bfs_results.length {
             var chk = bfs_results[i];
-            if chk.0.hash == target.hash and chk.1.hash == needs.hash and same(chk.2, has) {
-                return chk.3;
+            if chk.0.hash == target.hash 
+                and chk.1.hash == needs.0.hash and chk.2.hash == needs.1.hash
+                and same(chk.3, has.0) and same(chk.4, has.1) {
+                return chk.5;
             }
         }
+        // if bfs_results.0 {
+        //     return bfs_results.1;
+        // }
 
         count = count + 1;
         count2 = count2 + 1;
@@ -41,15 +47,19 @@ class Node {
 
         // We are the node.
         if target.hash == hash {
-            var v = if has { (1, 0) } else { (0, 1) };
+            var v = if has.1 and has.0 { 1 } else { 0 };
             cache(target, needs, has, v);
+            return v;
         }
 
-        if hash == needs.hash {
-            has = true;
+        if hash == needs.0.hash {
+            has.0 = true;
+        }
+        if hash == needs.1.hash {
+            has.1 = true;
         }
 
-        var sum = (0, 0);
+        var sum = 0;
         for edge in 0..edges.length {
             sum = sum + edges[edge].bfs_to(target, needs, has, depth + 1);
         }
@@ -190,21 +200,22 @@ fun init() {
     var you = you.or_panic();
     var dac = dac.or_panic();
     var fft = fft.or_panic();
-    var to_dac = you.bfs_to(dac, fft, false, 0);
-    var to_fft = you.bfs_to(fft, dac, false, 0);
-    var from_dac = dac.bfs_to(out, fft, false, 0);
-    var from_fft = fft.bfs_to(out, dac, false, 0);
+    print(you.bfs_to(out, (dac, fft), (false, false), 0));
+    // var to_dac = you.bfs_to(dac, fft, false, 0);
+    // var to_fft = you.bfs_to(fft, dac, false, 0);
+    // var from_dac = dac.bfs_to(out, fft, false, 0);
+    // var from_fft = fft.bfs_to(out, dac, false, 0);
 
-    print("to_dac: ", to_dac);
-    print("to_fft: ", to_fft);
-    print("from_dac: ", from_dac);
-    print("from_fft: ", from_fft);
+    // print("to_dac: ", to_dac);
+    // print("to_fft: ", to_fft);
+    // print("from_dac: ", from_dac);
+    // print("from_fft: ", from_fft);
 
-    // The answer should (?) be to_dac.with * from_dac.without + to_dac.without * from_dac.with
-    //                        + to_fft.with * from_fft.without + to_fft.without * from_fft.with
-    //
-    // Except that will double-count some... :(
-    //print(you.bfs_to(out, (dac, fft), (false, false), 0));
-    print(to_dac.0 * from_dac.1 + to_dac.1 * from_dac.0
-        + to_fft.0 * from_fft.1 + to_fft.1 * from_fft.0)
+    // // The answer should (?) be to_dac.with * from_dac.without + to_dac.without * from_dac.with
+    // //                        + to_fft.with * from_fft.without + to_fft.without * from_fft.with
+    // //
+    // // Except that will double-count some... :(
+    // //print(you.bfs_to(out, (dac, fft), (false, false), 0));
+    // print(to_dac.0 * from_dac.1 + to_dac.1 * from_dac.0
+    //     + to_fft.0 * from_fft.1 + to_fft.1 * from_fft.0)
 }
