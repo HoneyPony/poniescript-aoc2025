@@ -228,7 +228,7 @@ class Matrix {
 
                 test_counts[i] = k;
 
-                if count < 0 { is_good = false; break; }
+                if k < 0 { is_good = false; break; }
                 0;
             }
 
@@ -359,6 +359,11 @@ class Matrix {
             for i in 0..col_count - 1 {
                 sum = sum + rows[i].elems[col_count - 1];
                 best_counts[i] = roundit(rows[i].elems[col_count - 1]);
+
+                var at = rows[i].elems[col_count - 1];
+                if at < 0 {
+                    print("uh oh: ", i, " => ", at);
+                }
             }
             got_solution = true;
             return sum;
