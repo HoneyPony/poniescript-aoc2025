@@ -9,6 +9,10 @@ class Text {
     var text: StrBuf = "";
     var idx : int = 0;
 
+    fun at_end() -> bool {
+        idx >= text.length
+    }
+
     fun hash() -> int {
         var result = 0;
         for i in 0..3 {
@@ -17,6 +21,22 @@ class Text {
             idx = idx + 1;
         }
         result
+    }
+
+    fun line_hash() -> int {
+        if text[idx] == NL {
+            idx = idx + 1;
+            return -1;
+        }
+
+        var x = hash();
+        if text[idx] != NL { idx = idx + 1; };
+
+        x
+    }
+
+    fun skip_colon() {
+        idx = idx + 2;
     }
 
     fun node_and_skip() -> (int, Node?) {
@@ -41,9 +61,31 @@ fun get_text() -> Text {
     }
 }
 
+fun do_hash(s: StrConst) -> int {
+    var result = 0;
+    for i in 0..3 {
+        var x = s[i] - A;
+        result = (result * 26) + x;
+    }
+    result
+}
+
 fun init() {
     var nodes: DynArray[(int, Node)] = [];
     var text = get_text();
+
+    var out = new Node{};
+    nodes.push((do_hash("out"), out));
+
+    fun find_node(nodes: DynArray[(int, Node)], x: int) -> Node? {
+        for i in 0..nodes.length {
+            if nodes[i].0 == x {
+                return nodes[i].1;
+            }
+        }
+
+        nil
+    }
 
     loop {
         var next = text.node_and_skip();
@@ -52,6 +94,22 @@ fun init() {
         }
 
         nodes.push((next.0, next.1.or_panic()));
+    }
+
+    // Second pass: read connections
+    text.idx = 0;
+    loop {
+        if text.at_end() { break; }
+        var next_id = text.hash();
+        text.skip_colon();
+
+        var node = find_node(nodes, next_id).or_panic();
+        loop {
+            var next_edge = text.line_hash();
+            if next_edge < 0 { break; }
+            node.edges.push(find_node(nodes, next_edge).or_panic());
+        }
+        print("node has ", node.edges.length, " edges");
     }
 
     print("got ", nodes.length, " nodes");
