@@ -6,3 +6,6 @@ imports = ["../read_file.h"]
 files = ["puzzle2.poni"]
 imports = ["../read_file.h"]
 
+[projects.puzzle2-2]
+files = ["puzzle2-2.poni"]
+imports = ["../read_file.h"]
