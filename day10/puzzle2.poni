@@ -351,7 +351,7 @@ class Matrix {
 
         var col_count = rows[0].elems.length;
         var row_count = rows.length;
-        if (col_count - 1) <= row_count {
+        if (col_count - 1) < row_count {
             print_me();
             // Best is simply the sum of the right column.
             print(col_count, " ", row_count, " ", best_counts.length);
