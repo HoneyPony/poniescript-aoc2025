@@ -204,6 +204,16 @@ class Grid {
         }
     }
 
+    fun do_cc_shapes(x: int, y: int, count: int, ccs: Array[int]) {
+        var idx = 0;
+        var width = 3;
+        for i in 0..count {
+            while ccs[idx] <= 0 { idx = idx + 1; }
+            do_shape(x + i * width, y, idx);
+            ccs[idx] = ccs[idx] - 1;
+        }
+    }
+
     fun render_line(y: int) {
         var line = str("");
         for x in 0..size.x {
@@ -362,7 +372,7 @@ class Problem {
                 print("avail = ", avail);
                 if avail > other_3s { avail = other_3s; }
                 // TODO: every shape
-                grid.do_shapes(size.x - rem, size.y - space.y, avail, 1);
+                grid.do_cc_shapes(size.x - rem, size.y - space.y, avail, cc);
                 rem = (rem - avail * width);
                 print("rem => ", rem);
                 other_3s = other_3s - avail;
@@ -400,7 +410,7 @@ class Problem {
                 avail = rem / width;
                 if avail > other_3s { avail = other_3s; }
                 // TODO: Every shape
-                grid.do_shapes(size.x - rem, size.y - space.y, avail, 0);
+                grid.do_cc_shapes(size.x - rem, size.y - space.y, avail, cc);
                 rem = (rem - avail * width);
                 other_3s = other_3s - avail;
 
@@ -417,7 +427,7 @@ class Problem {
             var avail = rem / width;
             if avail > other_3s { avail = other_3s; }
              // TODO: Shape
-            grid.do_shapes(size.x - rem, size.y - space.y, avail, 0);
+            grid.do_cc_shapes(size.x - rem, size.y - space.y, avail, cc);
             rem = (rem - avail * width);
             other_3s = other_3s - avail;
            
