@@ -90,11 +90,133 @@ class Shape {
 
 class Grid {
     var size: vec2i = (0, 0);
-    var grid: DynArray[bool] = [];
-    
-    fun install(rect: vec2i) {
+    var grid: DynArray[StrConst] = [];
 
+    var widths = [3, 3, 3, 3, 3, 3, 6, 5, 4];
+
+    var shapes = [
+        fun(x: int, y: int, grid: Grid) {
+            grid.do_char3(x, y    , "0", "#", ".");
+            grid.do_char3(x, y + 1, "#", "#", "#");
+            grid.do_char3(x, y + 2, "#", ".", "#");
+        },
+        fun(x: int, y: int, grid: Grid) {
+            grid.do_char3(x, y    , "1", "#", "#");
+            grid.do_char3(x, y + 1, "#", "#", "#");
+            grid.do_char3(x, y + 2, ".", ".", "#");
+        },
+        fun(x: int, y: int, grid: Grid) {
+            grid.do_char3(x, y    , "2", "#", "#");
+            grid.do_char3(x, y + 1, ".", ".", "#");
+            grid.do_char3(x, y + 2, "#", "#", "#");
+        },
+        fun(x: int, y: int, grid: Grid) {
+            grid.do_char3(x, y    , "3", ".", ".");
+            grid.do_char3(x, y + 1, "#", "#", ".");
+            grid.do_char3(x, y + 2, "#", "#", "#");
+        },
+        fun(x: int, y: int, grid: Grid) {
+            grid.do_char3(x, y    , "4", ".", "#");
+            grid.do_char3(x, y + 1, "#", "#", "#");
+            grid.do_char3(x, y + 2, "#", ".", "#");
+        },
+        fun(x: int, y: int, grid: Grid) {
+            grid.do_char3(x, y    , "5", ".", ".");
+            grid.do_char3(x, y + 1, "#", "#", ".");
+            grid.do_char3(x, y + 2, ".", "#", "#");
+        },
+
+        fun(x: int, y: int, grid: Grid) {
+            grid.do_char6(x, y    , "@", "@", "$", "&", "&", "&");
+            grid.do_char6(x, y + 1, "@", "@", "$", "$", "&", "&");
+            grid.do_char6(x, y + 2, "@", "@", "@", "$", "$", "&");
+        },
+
+        fun(x: int, y: int, grid: Grid) {
+            grid.do_char5(x, y    , "<", "<", "*", "*", "*");
+            grid.do_char5(x, y + 1, "<", "<", "*", "*", ".");
+            grid.do_char5(x, y + 2, "<", "<", "<", "*", "*");
+        },
+
+        fun(x: int, y: int, grid: Grid) {
+            grid.do_char4(x, y    , ".", "%", "%", "%");
+            grid.do_char4(x, y + 1, "=", "=", "=", "%");
+            grid.do_char4(x, y + 2, "=", "%", "%", "%");
+            grid.do_char4(x, y + 3, "=", "=", "=", ".");
+        },
+    ];
+
+    fun do_char3(x: int, y: int, chara: StrConst, charb: StrConst, charc: StrConst) {
+        do_char(x    , y, chara);
+        do_char(x + 1, y, charb);
+        do_char(x + 2, y, charc);
     }
+
+    fun do_char4(x: int, y: int, chara: StrConst, charb: StrConst, charc: StrConst, chard: StrConst) {
+        do_char(x    , y, chara);
+        do_char(x + 1, y, charb);
+        do_char(x + 2, y, charc);
+        do_char(x + 3, y, chard);
+    }
+
+    fun do_char5(x: int, y: int, chara: StrConst, charb: StrConst, charc: StrConst, chard: StrConst, chare: StrConst) {
+        do_char(x    , y, chara);
+        do_char(x + 1, y, charb);
+        do_char(x + 2, y, charc);
+        do_char(x + 3, y, chard);
+        do_char(x + 4, y, chare);
+    }
+
+    fun do_char6(x: int, y: int, chara: StrConst, charb: StrConst, charc: StrConst, chard: StrConst, chare: StrConst, charf: StrConst) {
+        do_char(x    , y, chara);
+        do_char(x + 1, y, charb);
+        do_char(x + 2, y, charc);
+        do_char(x + 3, y, chard);
+        do_char(x + 4, y, chare);
+        do_char(x + 5, y, charf);
+    }
+
+    fun do_char(x: int, y: int, char: StrConst) {
+        grid[y * size.x + x] = char;
+    }
+
+    fun do_shape(x: int, y: int, shape: int) {
+        shapes[shape](x, y, self);
+    }
+    
+    fun do_shapes(x: int, y: int, count: int, shape: int) {
+        var width = widths[shape];
+        for i in 0..count {
+            do_shape(x + i * width, y, shape);
+        }
+    }
+
+    fun render_line(y: int) {
+        var line = str("");
+        for x in 0..size.x {
+            line = str(line, grid[y * size.x + x]);
+        }
+        print(line);
+    }
+
+    fun render_me() {
+        for y in 0..size.y {
+            render_line(y);
+        }
+    }
+}
+
+fun make_grid(size: vec2i) -> Grid {
+    var g = new Grid{};
+    g.size = size;
+
+    for i in 0..size.y {
+        for j in 0..size.y {
+            g.grid.push(".");
+        }
+    }
+
+    g
 }
 
 class Problem {
@@ -114,16 +236,16 @@ class Problem {
         sum
     }
 
-    fun second_debug() {
-        var sum = 0.0;
-        for i in 0..counts.length {
-            sum = sum + counts[i];
-        }
-        var total_side_len = (sqrtit(sum));
-        var x = roundit(total_side_len);
-        var y = roundit(total_side_len) * 2 - x;
-        print("sum = ", sum, " len = ", total_side_len, " ", size.x, " ", size.y, " | ", x * 3, " ", y * 3);
-    }
+    // fun second_debug() {
+    //     var sum = 0.0;
+    //     for i in 0..counts.length {
+    //         sum = sum + counts[i];
+    //     }
+    //     var total_side_len = (sqrtit(sum));
+    //     var x = roundit(total_side_len);
+    //     var y = roundit(total_side_len) * 2 - x;
+    //     print("sum = ", sum, " len = ", total_side_len, " ", size.x, " ", size.y, " | ", x * 3, " ", y * 3);
+    // }
 
     fun debug_count(shapes: DynArray[Shape]) {
         var x = count_all_blocks(shapes);
@@ -164,6 +286,8 @@ class Problem {
         // - 2 for each 0
         // 
 
+        var grid = make_grid(size);
+
         var empty_spaces = 0;
         empty_spaces = empty_spaces + cc[0] * 2;
         empty_spaces = empty_spaces + cc[1] * 2;
@@ -201,6 +325,7 @@ class Problem {
             if avail > c135s { avail = c135s; }
             rem = (rem - avail * width);
             c135s = c135s - avail;
+            grid.do_shapes(size.x - rem, size.y - space.y, avail, 6);
 
             while c10s > 0 {
                 var width = 5;
@@ -209,6 +334,7 @@ class Problem {
                 if avail > c10s { avail = c10s; }
                 rem = (rem - avail * width);
                 c10s = c10s - avail;
+                grid.do_shapes(size.x - rem, size.y - space.y, avail, 7);
             }
 
             while other_3s > 0 {
@@ -218,6 +344,9 @@ class Problem {
                 if avail > other_3s { avail = other_3s; }
                 rem = (rem - avail * width);
                 other_3s = other_3s - avail;
+
+                // TODO: every shape
+                grid.do_shapes(size.x - rem, size.y - space.y, avail, 0);
             }
 
             // for j in 0..6 {
@@ -242,6 +371,7 @@ class Problem {
             if avail > c10s { avail = c10s; }
             rem = (rem - avail * width);
             c10s = c10s - avail;
+            grid.do_shapes(size.x - rem, size.y - space.y, avail, 7);
 
             while other_3s > 0 {
                 var width = 5;
@@ -250,6 +380,9 @@ class Problem {
                 if avail > other_3s { avail = other_3s; }
                 rem = (rem - avail * width);
                 other_3s = other_3s - avail;
+
+                // TODO: Every shape
+                grid.do_shapes(size.x - rem, size.y - space.y, avail, 0);
             }
 
             space.y = space.y - 3;
@@ -263,6 +396,8 @@ class Problem {
             if avail > other_3s { avail = other_3s; }
             rem = (rem - avail * width);
             other_3s = other_3s - avail;
+            // TODO: Shape
+            grid.do_shapes(size.x - rem, size.y - space.y, avail, 0);
 
             // Here, we actually do want to allocate more c2s.
             var sizedelta = 3;
@@ -276,6 +411,7 @@ class Problem {
                     if avail > c2s { avail = c2s; }
                     rem = (rem - avail * width);
                     c2s = c2s - avail;
+                    grid.do_shapes(size.x - rem, size.y - space.y, avail, 8);
                 }
             }
 
@@ -291,11 +427,15 @@ class Problem {
             rem = (rem - avail * width);
             c2s = c2s - avail;
 
+            grid.do_shapes(size.x - rem, size.y - space.y, avail, 8);
+
             space.y = space.y - 3;
+           
             //if avail <= 0 { break; }
         }
 
         print("leftover space.y: ", space.y);
+        grid.render_me();
         return space.y >= 0;
         
         //return (empty_spaces + used_spaces) <= (size.x * size.y);
@@ -326,6 +466,7 @@ fun init() {
         if problems[i].count_stuff(shapes) {
             total = total + 1;
         }
+        break;
         //problems[i].second_debug();
     }
     print("total = ", total);
