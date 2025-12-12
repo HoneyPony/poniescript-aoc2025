@@ -177,9 +177,9 @@ class Grid {
     }
 
     fun do_char(x: int, y: int, char: StrConst) {
-        if y > size.y {
+        if y >= size.y {
             // OOB
-            y = size.y;
+            y = size.y - 1;
             char = "-";
         }
 
@@ -233,7 +233,7 @@ fun make_grid(size: vec2i) -> Grid {
     var g = new Grid{};
     g.size = size;
 
-    for i in 0..size.y {
+    for i in 0..size.x {
         for j in 0..size.y {
             g.grid.push(".");
         }
