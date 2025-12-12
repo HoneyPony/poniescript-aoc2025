@@ -177,14 +177,17 @@ class Grid {
     }
 
     fun do_char(x: int, y: int, char: StrConst) {
+        var do_panic_check = true;
         if y >= size.y {
             // OOB
             y = size.y - 1;
             char = "-";
+            do_panic_check = false; // This problem is already OOB (?)
         }
 
         var at = grid[y * size.x + x];
-        if at[0] != "."[0] {
+        if at[0] != "."[0] and do_panic_check {
+            // print("panic @ ", (x, y), " ", at[0], " | ", char);
             // BUG: nil.or_panic() causes internal C error
             var x: Grid? = nil;
             x.or_panic();
@@ -445,6 +448,8 @@ class Problem {
                     avail = rem / width;
                     if avail > c2s { avail = c2s; }
                     if avail > 0 { sizedelta = 4; }
+                   // print("avail, width, rem = ", avail, " ", width, " ", rem);
+                    //grid.render_me();
                     grid.do_shapes(size.x - rem, size.y - space.y, avail, 8);
                     rem = (rem - avail * width);
                     c2s = c2s - avail;
@@ -461,8 +466,8 @@ class Problem {
             var width = 4;
             var avail = rem / width;
             if avail > c2s { avail = c2s; }
-            print("avail, width, rem = ", avail, " ", width, " ", rem);
-            grid.render_me();
+            //print("avail, width, rem = ", avail, " ", width, " ", rem);
+            //grid.render_me();
             grid.do_shapes(size.x - rem, size.y - space.y, avail, 8);
             rem = (rem - avail * width);
             c2s = c2s - avail;
@@ -502,8 +507,9 @@ fun init() {
 
     var total = 0;
 
-    for i in 0..problems.length {
+    for i in 636..problems.length {
         //problems[i].debug_count(shapes);
+        print("problem #", i);
         if problems[i].count_stuff(shapes) {
             total = total + 1;
         }
