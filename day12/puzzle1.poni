@@ -127,20 +127,20 @@ class Grid {
         },
 
         fun shape6(x: int, y: int, grid: Grid) {
-            grid.do_char6(x, y    , "@", "@", "$", "&", "&", "&");
+            grid.do_char6(x, y    , "1", "@", "5", "3", "&", "&");
             grid.do_char6(x, y + 1, "@", "@", "$", "$", "&", "&");
             grid.do_char6(x, y + 2, "@", "@", "@", "$", "$", "&");
         },
 
         fun shape7(x: int, y: int, grid: Grid) {
-            grid.do_char5(x, y    , "<", "<", "*", "*", "*");
+            grid.do_char5(x, y    , "1", "<", "0", "*", "*");
             grid.do_char5(x, y + 1, "<", "<", "*", "*", ".");
             grid.do_char5(x, y + 2, "<", "<", "<", "*", "*");
         },
 
         fun shape8(x: int, y: int, grid: Grid) {
-            grid.do_char4(x, y    , ".", "%", "%", "%");
-            grid.do_char4(x, y + 1, "=", "=", "=", "%");
+            grid.do_char4(x, y    , ".", "2", "%", "%");
+            grid.do_char4(x, y + 1, "2", "=", "=", "%");
             grid.do_char4(x, y + 2, "=", "%", "%", "%");
             grid.do_char4(x, y + 3, "=", "=", "=", ".");
         },
@@ -198,7 +198,7 @@ class Grid {
     
     fun do_shapes(x: int, y: int, count: int, shape: int) {
         var width = widths[shape];
-        print("use up ", count * width, " at ", x, " ", y);
+        //print("use up ", count * width, " at ", x, " ", y);
         for i in 0..count {
             do_shape(x + i * width, y, shape);
         }
@@ -300,7 +300,7 @@ class Problem {
             c2s = c2s + 1;
         }
 
-        print("135-s: ", c135s, " 10-s: ", c10s, " 22-s: ", c2s);
+        //print("135-s: ", c135s, " 10-s: ", c10s, " 22-s: ", c2s);
         // Empty spaces is:
         // - 0 for each c135
         // - 1 for each 01
@@ -328,7 +328,7 @@ class Problem {
             used_spaces = used_spaces + counts[i] * shapes[i].count;
         }
 
-        print("empty spaces = ", empty_spaces, " used spaces = ", used_spaces, " sum = ", empty_spaces + used_spaces, " real = ", size.x * size.y);
+        //print("empty spaces = ", empty_spaces, " used spaces = ", used_spaces, " sum = ", empty_spaces + used_spaces, " real = ", size.x * size.y);
         
         // early out..?
         if (empty_spaces + used_spaces) > (size.x * size.y) {
@@ -340,7 +340,7 @@ class Problem {
             other_3s = other_3s + cc[i];
         }
 
-        print("-- size -- ", size);
+        //print("-- size -- ", size);
         var space = size;
         while c135s > 0 {
             var rem = space.x;
@@ -349,7 +349,7 @@ class Problem {
             if avail > c135s { avail = c135s; }
             grid.do_shapes(size.x - rem, size.y - space.y, avail, 6);
             rem = (rem - avail * width);
-            print("avail, width, rem = ", avail, " ", width, " ", rem);
+            //print("avail, width, rem = ", avail, " ", width, " ", rem);
             c135s = c135s - avail;
            
 
@@ -360,7 +360,7 @@ class Problem {
                 if avail > c10s { avail = c10s; }
                 grid.do_shapes(size.x - rem, size.y - space.y, avail, 7);
                 rem = (rem - avail * width);
-                print("rem => ", rem);
+                //print("rem => ", rem);
                 c10s = c10s - avail;
                 
             }
@@ -369,12 +369,12 @@ class Problem {
                 var width = 3;
                 if rem < width { break; };
                 avail = rem / width;
-                print("avail = ", avail);
+                //print("avail = ", avail);
                 if avail > other_3s { avail = other_3s; }
                 // TODO: every shape
                 grid.do_cc_shapes(size.x - rem, size.y - space.y, avail, cc);
                 rem = (rem - avail * width);
-                print("rem => ", rem);
+                //print("rem => ", rem);
                 other_3s = other_3s - avail;
 
                
@@ -469,8 +469,10 @@ class Problem {
             //if avail <= 0 { break; }
         }
 
-        print("leftover space.y: ", space.y);
+        //print("leftover space.y: ", space.y);
+        print("────────────────────────────────────────────────────────────");
         grid.render_me();
+        print("────────────────────────────────────────────────────────────");
         return space.y >= 0;
         
         //return (empty_spaces + used_spaces) <= (size.x * size.y);
@@ -501,10 +503,9 @@ fun init() {
         if problems[i].count_stuff(shapes) {
             total = total + 1;
         }
-        break;
         //problems[i].second_debug();
     }
-    print("total = ", total);
+    //print("total = ", total);
 
     //print(problems.length);
 
