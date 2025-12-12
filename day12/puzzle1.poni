@@ -355,7 +355,7 @@ class Problem {
 
             if c10s > 0 {
                 var width = 5;
-                if rem < width { break; };
+                //if rem < width { break; };
                 avail = rem / width;
                 if avail > c10s { avail = c10s; }
                 grid.do_shapes(size.x - rem, size.y - space.y, avail, 7);
@@ -367,7 +367,7 @@ class Problem {
 
             if other_3s > 0 {
                 var width = 3;
-                if rem < width { break; };
+                //if rem < width { break; };
                 avail = rem / width;
                 //print("avail = ", avail);
                 if avail > other_3s { avail = other_3s; }
@@ -400,13 +400,16 @@ class Problem {
             var width = 5;
             var avail = rem / width;
             if avail > c10s { avail = c10s; }
+            //grid.render_me();
+           // print("avail, width, rem = ", avail, " ", width, " ", rem);
+            grid.do_shapes(size.x - rem, size.y - space.y, avail, 7);
             rem = (rem - avail * width);
             c10s = c10s - avail;
-            grid.do_shapes(size.x - rem, size.y - space.y, avail, 7);
+            
 
-            while other_3s > 0 {
+            if other_3s > 0 {
                 var width = 5;
-                if rem < width { break; };
+                //if rem < width { break; };
                 avail = rem / width;
                 if avail > other_3s { avail = other_3s; }
                 // TODO: Every shape
@@ -436,12 +439,12 @@ class Problem {
             var sizedelta = 3;
             if other_3s == 0 {
                 var width = 4;
-                sizedelta = 4;
-                while c2s > 0 {
+                if c2s > 0 {
                     var width = 4;
-                    if rem < width { break; };
+                    //if rem < width { break; };
                     avail = rem / width;
                     if avail > c2s { avail = c2s; }
+                    if avail > 0 { sizedelta = 4; }
                     grid.do_shapes(size.x - rem, size.y - space.y, avail, 8);
                     rem = (rem - avail * width);
                     c2s = c2s - avail;
@@ -458,13 +461,14 @@ class Problem {
             var width = 4;
             var avail = rem / width;
             if avail > c2s { avail = c2s; }
+            print("avail, width, rem = ", avail, " ", width, " ", rem);
+            grid.render_me();
             grid.do_shapes(size.x - rem, size.y - space.y, avail, 8);
             rem = (rem - avail * width);
             c2s = c2s - avail;
 
+            space.y = space.y - 4;
             
-
-            space.y = space.y - 3;
            
             //if avail <= 0 { break; }
         }
