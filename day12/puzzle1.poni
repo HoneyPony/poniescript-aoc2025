@@ -25,6 +25,9 @@ class Text {
         for i in 0..3 {
             for j in 0..3 {
                 s.array[k] = (text[idx] == HASH);
+                if s.array[i] {
+                    s.count = s.count + 1;
+                }
                 idx = idx + 1;
                 k = k + 1;
             }
@@ -73,6 +76,8 @@ class Shape {
         false, false, false,
         false, false, false];
 
+    var count: int = 0;
+
     fun debug() {
         fun r(b: bool) -> StrConst { lerp(".", "#", b) }
         print(
@@ -90,6 +95,19 @@ class Problem {
     fun debug() {
         print(size.x, "x", size.y, " ", counts[0], " ", counts[1], " ",
             counts[2], " ", counts[3], " ", counts[4], " ", counts[5])
+    }
+
+    fun count_all_blocks(shapes: DynArray[Shape]) -> int {
+        var sum = 0;
+        for i in 0..shapes.length {
+            sum = sum + shapes[i].count * counts[i];
+        }
+        sum
+    }
+
+    fun debug_count(shapes: DynArray[Shape]) {
+        var x = count_all_blocks(shapes);
+        print("size: ", size, " => ", (size.x * size.y), " ", x, " ", (size.x * size.y) < x);
     }
 }
 
@@ -110,10 +128,14 @@ fun init() {
         problems.push(text.problem() else { break; });
     }
 
-    for i in 0..shapes.length {
-        shapes[i].debug();
-    }
     for i in 0..problems.length {
-        problems[i].debug();
+        problems[i].debug_count(shapes);
     }
+
+    // for i in 0..shapes.length {
+    //     shapes[i].debug();
+    // }
+    // for i in 0..problems.length {
+    //     problems[i].debug();
+    // }
 }
