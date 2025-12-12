@@ -278,7 +278,7 @@ class Problem {
         print("size: ", size, " => ", (size.x * size.y), " ", x, " ", (size.x * size.y) < x);
     }
 
-    fun count_stuff(shapes: DynArray[Shape]) -> bool {
+    fun count_stuff(shapes: DynArray[Shape]) -> (bool, bool) {
         var c135s = 0;
         var c10s = 0;
         var c2s = 0;
@@ -335,7 +335,7 @@ class Problem {
         
         // early out..?
         if (empty_spaces + used_spaces) > (size.x * size.y) {
-            return false;
+            return (false, false);
         }
 
         var other_3s = 0;
@@ -482,7 +482,7 @@ class Problem {
         print("────────────────────────────────────────────────────────────");
         grid.render_me();
         print("────────────────────────────────────────────────────────────");
-        return space.y >= 0;
+        return (space.y >= 0, true); // second tuple element is whether this one was 'interesting'
         
         //return (empty_spaces + used_spaces) <= (size.x * size.y);
     }
@@ -507,15 +507,17 @@ fun init() {
 
     var total = 0;
 
-    for i in 636..problems.length {
+    for i in 0..problems.length {
         //problems[i].debug_count(shapes);
-        print("problem #", i);
-        if problems[i].count_stuff(shapes) {
+        
+        var result = problems[i].count_stuff(shapes);
+        if result.0 {
             total = total + 1;
         }
+        print("problem #", i, " => ", result.0, " (interesting: ", result.1, ")");
         //problems[i].second_debug();
     }
-    //print("total = ", total);
+    print("total = ", total);
 
     //print(problems.length);
 
