@@ -249,35 +249,6 @@ class Problem {
     var size: vec2i = (0, 0);
     var counts: Array[int] = [0, 0, 0, 0, 0, 0];
 
-    fun debug() {
-        print(size.x, "x", size.y, " ", counts[0], " ", counts[1], " ",
-            counts[2], " ", counts[3], " ", counts[4], " ", counts[5])
-    }
-
-    fun count_all_blocks(shapes: DynArray[Shape]) -> int {
-        var sum = 0;
-        for i in 0..shapes.length {
-            sum = sum + shapes[i].count * counts[i];
-        }
-        sum
-    }
-
-    // fun second_debug() {
-    //     var sum = 0.0;
-    //     for i in 0..counts.length {
-    //         sum = sum + counts[i];
-    //     }
-    //     var total_side_len = (sqrtit(sum));
-    //     var x = roundit(total_side_len);
-    //     var y = roundit(total_side_len) * 2 - x;
-    //     print("sum = ", sum, " len = ", total_side_len, " ", size.x, " ", size.y, " | ", x * 3, " ", y * 3);
-    // }
-
-    fun debug_count(shapes: DynArray[Shape]) {
-        var x = count_all_blocks(shapes);
-        print("size: ", size, " => ", (size.x * size.y), " ", x, " ", (size.x * size.y) < x);
-    }
-
     fun count_stuff(shapes: DynArray[Shape]) -> (bool, bool) {
         var c135s = 0;
         var c10s = 0;
@@ -303,15 +274,6 @@ class Problem {
             c2s = c2s + 1;
         }
 
-        //print("135-s: ", c135s, " 10-s: ", c10s, " 22-s: ", c2s);
-        // Empty spaces is:
-        // - 0 for each c135
-        // - 1 for each 01
-        // - 2 for each 22
-        // - 2 for each 4
-        // - 2 for each 0
-        // 
-
         var grid = make_grid(size);
 
         var empty_spaces = 0;
@@ -331,9 +293,10 @@ class Problem {
             used_spaces = used_spaces + counts[i] * shapes[i].count;
         }
 
-        //print("empty spaces = ", empty_spaces, " used spaces = ", used_spaces, " sum = ", empty_spaces + used_spaces, " real = ", size.x * size.y);
-        
-        // early out..?
+        // If the number of empty spaces plus the number of used spaces is
+        // greater than the area of the rectangle, then this particular
+        // packing of shapes will never work. We assume that, in that case,
+        // there's no way to do it.
         if (empty_spaces + used_spaces) > (size.x * size.y) {
             return (false, false);
         }
@@ -343,7 +306,6 @@ class Problem {
             other_3s = other_3s + cc[i];
         }
 
-        //print("-- size -- ", size);
         var space = size;
         while c135s > 0 {
             var rem = space.x;
@@ -352,50 +314,28 @@ class Problem {
             if avail > c135s { avail = c135s; }
             grid.do_shapes(size.x - rem, size.y - space.y, avail, 6);
             rem = (rem - avail * width);
-            //print("avail, width, rem = ", avail, " ", width, " ", rem);
             c135s = c135s - avail;
            
 
             if c10s > 0 {
                 var width = 5;
-                //if rem < width { break; };
                 avail = rem / width;
                 if avail > c10s { avail = c10s; }
                 grid.do_shapes(size.x - rem, size.y - space.y, avail, 7);
                 rem = (rem - avail * width);
-                //print("rem => ", rem);
                 c10s = c10s - avail;
-                
             }
 
             if other_3s > 0 {
                 var width = 3;
-                //if rem < width { break; };
                 avail = rem / width;
-                //print("avail = ", avail);
                 if avail > other_3s { avail = other_3s; }
-                // TODO: every shape
                 grid.do_cc_shapes(size.x - rem, size.y - space.y, avail, cc);
                 rem = (rem - avail * width);
-                //print("rem => ", rem);
                 other_3s = other_3s - avail;
-
-               
             }
 
-            // for j in 0..6 {
-            //     while cc[j] > 0 {
-            //         var width = 3;
-            //         if rem < width { break; };
-            //         avail = rem / width;
-            //         if avail > cc[j] { avail = cc[j]; }
-            //         rem = (rem - avail * width);
-            //         cc[j] = cc[j] - avail;
-            //     }
-            // }
-
             space.y = space.y - 3;
-            //if avail <= 0 { break; }
         }
 
         while c10s > 0 {
@@ -403,28 +343,21 @@ class Problem {
             var width = 5;
             var avail = rem / width;
             if avail > c10s { avail = c10s; }
-            //grid.render_me();
-           // print("avail, width, rem = ", avail, " ", width, " ", rem);
+
             grid.do_shapes(size.x - rem, size.y - space.y, avail, 7);
             rem = (rem - avail * width);
             c10s = c10s - avail;
             
-
             if other_3s > 0 {
                 var width = 5;
-                //if rem < width { break; };
                 avail = rem / width;
                 if avail > other_3s { avail = other_3s; }
-                // TODO: Every shape
                 grid.do_cc_shapes(size.x - rem, size.y - space.y, avail, cc);
                 rem = (rem - avail * width);
                 other_3s = other_3s - avail;
-
-                
             }
 
             space.y = space.y - 3;
-            //if avail <= 0 { break; }
         }
 
         while other_3s > 0 {
@@ -432,33 +365,26 @@ class Problem {
             var width = 3;
             var avail = rem / width;
             if avail > other_3s { avail = other_3s; }
-             // TODO: Shape
             grid.do_cc_shapes(size.x - rem, size.y - space.y, avail, cc);
             rem = (rem - avail * width);
             other_3s = other_3s - avail;
            
-
             // Here, we actually do want to allocate more c2s.
             var sizedelta = 3;
             if other_3s == 0 {
                 var width = 4;
                 if c2s > 0 {
                     var width = 4;
-                    //if rem < width { break; };
                     avail = rem / width;
                     if avail > c2s { avail = c2s; }
                     if avail > 0 { sizedelta = 4; }
-                   // print("avail, width, rem = ", avail, " ", width, " ", rem);
-                    //grid.render_me();
                     grid.do_shapes(size.x - rem, size.y - space.y, avail, 8);
                     rem = (rem - avail * width);
                     c2s = c2s - avail;
-                    
                 }
             }
 
             space.y = space.y - sizedelta;
-            //if avail <= 0 { break; }
         }
 
         while c2s > 0 {
@@ -466,25 +392,17 @@ class Problem {
             var width = 4;
             var avail = rem / width;
             if avail > c2s { avail = c2s; }
-            //print("avail, width, rem = ", avail, " ", width, " ", rem);
-            //grid.render_me();
             grid.do_shapes(size.x - rem, size.y - space.y, avail, 8);
             rem = (rem - avail * width);
             c2s = c2s - avail;
 
             space.y = space.y - 4;
-            
-           
-            //if avail <= 0 { break; }
         }
 
-        //print("leftover space.y: ", space.y);
-        print("────────────────────────────────────────────────────────────");
+        print("============================================================");
         grid.render_me();
-        print("────────────────────────────────────────────────────────────");
+        print("============================================================");
         return (space.y >= 0, true); // second tuple element is whether this one was 'interesting'
-        
-        //return (empty_spaces + used_spaces) <= (size.x * size.y);
     }
 }
 
@@ -508,23 +426,11 @@ fun init() {
     var total = 0;
 
     for i in 0..problems.length {
-        //problems[i].debug_count(shapes);
-        
         var result = problems[i].count_stuff(shapes);
         if result.0 {
             total = total + 1;
         }
         print("problem #", i, " => ", result.0, " (interesting: ", result.1, ")");
-        //problems[i].second_debug();
     }
     print("total = ", total);
-
-    //print(problems.length);
-
-    // for i in 0..shapes.length {
-    //     shapes[i].debug();
-    // }
-    // for i in 0..problems.length {
-    //     problems[i].debug();
-    // }
 }
