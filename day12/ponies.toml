@@ -1,0 +1,7 @@
+[projects.puzzle1]
+files = ["puzzle1.poni"]
+imports = ["../read_file.h"]
+
+[projects.puzzle2]
+files = ["puzzle2.poni"]
+imports = ["../read_file.h"]
