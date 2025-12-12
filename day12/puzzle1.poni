@@ -95,50 +95,50 @@ class Grid {
     var widths = [3, 3, 3, 3, 3, 3, 6, 5, 4];
 
     var shapes = [
-        fun(x: int, y: int, grid: Grid) {
+        fun shape0(x: int, y: int, grid: Grid) {
             grid.do_char3(x, y    , "0", "#", ".");
             grid.do_char3(x, y + 1, "#", "#", "#");
             grid.do_char3(x, y + 2, "#", ".", "#");
         },
-        fun(x: int, y: int, grid: Grid) {
+        fun shape1(x: int, y: int, grid: Grid) {
             grid.do_char3(x, y    , "1", "#", "#");
             grid.do_char3(x, y + 1, "#", "#", "#");
             grid.do_char3(x, y + 2, ".", ".", "#");
         },
-        fun(x: int, y: int, grid: Grid) {
+        fun shape2(x: int, y: int, grid: Grid) {
             grid.do_char3(x, y    , "2", "#", "#");
             grid.do_char3(x, y + 1, ".", ".", "#");
             grid.do_char3(x, y + 2, "#", "#", "#");
         },
-        fun(x: int, y: int, grid: Grid) {
+        fun shape3(x: int, y: int, grid: Grid) {
             grid.do_char3(x, y    , "3", ".", ".");
             grid.do_char3(x, y + 1, "#", "#", ".");
             grid.do_char3(x, y + 2, "#", "#", "#");
         },
-        fun(x: int, y: int, grid: Grid) {
+        fun shape4(x: int, y: int, grid: Grid) {
             grid.do_char3(x, y    , "4", ".", "#");
             grid.do_char3(x, y + 1, "#", "#", "#");
             grid.do_char3(x, y + 2, "#", ".", "#");
         },
-        fun(x: int, y: int, grid: Grid) {
+        fun shape5(x: int, y: int, grid: Grid) {
             grid.do_char3(x, y    , "5", ".", ".");
             grid.do_char3(x, y + 1, "#", "#", ".");
             grid.do_char3(x, y + 2, ".", "#", "#");
         },
 
-        fun(x: int, y: int, grid: Grid) {
+        fun shape6(x: int, y: int, grid: Grid) {
             grid.do_char6(x, y    , "@", "@", "$", "&", "&", "&");
             grid.do_char6(x, y + 1, "@", "@", "$", "$", "&", "&");
             grid.do_char6(x, y + 2, "@", "@", "@", "$", "$", "&");
         },
 
-        fun(x: int, y: int, grid: Grid) {
+        fun shape7(x: int, y: int, grid: Grid) {
             grid.do_char5(x, y    , "<", "<", "*", "*", "*");
             grid.do_char5(x, y + 1, "<", "<", "*", "*", ".");
             grid.do_char5(x, y + 2, "<", "<", "<", "*", "*");
         },
 
-        fun(x: int, y: int, grid: Grid) {
+        fun shape8(x: int, y: int, grid: Grid) {
             grid.do_char4(x, y    , ".", "%", "%", "%");
             grid.do_char4(x, y + 1, "=", "=", "=", "%");
             grid.do_char4(x, y + 2, "=", "%", "%", "%");
@@ -177,6 +177,12 @@ class Grid {
     }
 
     fun do_char(x: int, y: int, char: StrConst) {
+        if y > size.y {
+            // OOB
+            y = size.y;
+            char = "-";
+        }
+
         var at = grid[y * size.x + x];
         if at[0] != "."[0] {
             // BUG: nil.or_panic() causes internal C error
@@ -192,6 +198,7 @@ class Grid {
     
     fun do_shapes(x: int, y: int, count: int, shape: int) {
         var width = widths[shape];
+        print("use up ", count * width, " at ", x, " ", y);
         for i in 0..count {
             do_shape(x + i * width, y, shape);
         }
@@ -323,36 +330,44 @@ class Problem {
             other_3s = other_3s + cc[i];
         }
 
+        print("-- size -- ", size);
         var space = size;
         while c135s > 0 {
             var rem = space.x;
             var width = 6;
             var avail = rem / width;
             if avail > c135s { avail = c135s; }
-            rem = (rem - avail * width);
-            c135s = c135s - avail;
             grid.do_shapes(size.x - rem, size.y - space.y, avail, 6);
+            rem = (rem - avail * width);
+            print("avail, width, rem = ", avail, " ", width, " ", rem);
+            c135s = c135s - avail;
+           
 
-            while c10s > 0 {
+            if c10s > 0 {
                 var width = 5;
                 if rem < width { break; };
                 avail = rem / width;
                 if avail > c10s { avail = c10s; }
-                rem = (rem - avail * width);
-                c10s = c10s - avail;
                 grid.do_shapes(size.x - rem, size.y - space.y, avail, 7);
+                rem = (rem - avail * width);
+                print("rem => ", rem);
+                c10s = c10s - avail;
+                
             }
 
-            while other_3s > 0 {
-                var width = 5;
+            if other_3s > 0 {
+                var width = 3;
                 if rem < width { break; };
                 avail = rem / width;
+                print("avail = ", avail);
                 if avail > other_3s { avail = other_3s; }
+                // TODO: every shape
+                grid.do_shapes(size.x - rem, size.y - space.y, avail, 1);
                 rem = (rem - avail * width);
+                print("rem => ", rem);
                 other_3s = other_3s - avail;
 
-                // TODO: every shape
-                grid.do_shapes(size.x - rem, size.y - space.y, avail, 0);
+               
             }
 
             // for j in 0..6 {
@@ -384,11 +399,12 @@ class Problem {
                 if rem < width { break; };
                 avail = rem / width;
                 if avail > other_3s { avail = other_3s; }
+                // TODO: Every shape
+                grid.do_shapes(size.x - rem, size.y - space.y, avail, 0);
                 rem = (rem - avail * width);
                 other_3s = other_3s - avail;
 
-                // TODO: Every shape
-                grid.do_shapes(size.x - rem, size.y - space.y, avail, 0);
+                
             }
 
             space.y = space.y - 3;
@@ -400,10 +416,11 @@ class Problem {
             var width = 3;
             var avail = rem / width;
             if avail > other_3s { avail = other_3s; }
+             // TODO: Shape
+            grid.do_shapes(size.x - rem, size.y - space.y, avail, 0);
             rem = (rem - avail * width);
             other_3s = other_3s - avail;
-            // TODO: Shape
-            grid.do_shapes(size.x - rem, size.y - space.y, avail, 0);
+           
 
             // Here, we actually do want to allocate more c2s.
             var sizedelta = 3;
@@ -415,13 +432,14 @@ class Problem {
                     if rem < width { break; };
                     avail = rem / width;
                     if avail > c2s { avail = c2s; }
+                    grid.do_shapes(size.x - rem, size.y - space.y, avail, 8);
                     rem = (rem - avail * width);
                     c2s = c2s - avail;
-                    grid.do_shapes(size.x - rem, size.y - space.y, avail, 8);
+                    
                 }
             }
 
-            space.y = space.y - 3;
+            space.y = space.y - sizedelta;
             //if avail <= 0 { break; }
         }
 
@@ -430,10 +448,11 @@ class Problem {
             var width = 4;
             var avail = rem / width;
             if avail > c2s { avail = c2s; }
+            grid.do_shapes(size.x - rem, size.y - space.y, avail, 8);
             rem = (rem - avail * width);
             c2s = c2s - avail;
 
-            grid.do_shapes(size.x - rem, size.y - space.y, avail, 8);
+            
 
             space.y = space.y - 3;
            
