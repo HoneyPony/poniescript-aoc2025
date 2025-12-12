@@ -177,6 +177,12 @@ class Grid {
     }
 
     fun do_char(x: int, y: int, char: StrConst) {
+        var at = grid[y * size.x + x];
+        if at[0] != "."[0] {
+            // BUG: nil.or_panic() causes internal C error
+            var x: Grid? = nil;
+            x.or_panic();
+        }
         grid[y * size.x + x] = char;
     }
 
