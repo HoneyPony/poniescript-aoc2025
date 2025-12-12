@@ -105,6 +105,17 @@ class Problem {
         sum
     }
 
+    fun second_debug() {
+        var sum = 0.0;
+        for i in 0..counts.length {
+            sum = sum + counts[i];
+        }
+        var total_side_len = (sqrtit(sum));
+        var x = roundit(total_side_len);
+        var y = roundit(total_side_len) * 2 - x;
+        print("sum = ", sum, " len = ", total_side_len, " ", size.x, " ", size.y, " | ", x * 3, " ", y * 3);
+    }
+
     fun debug_count(shapes: DynArray[Shape]) {
         var x = count_all_blocks(shapes);
         print("size: ", size, " => ", (size.x * size.y), " ", x, " ", (size.x * size.y) < x);
@@ -130,7 +141,10 @@ fun init() {
 
     for i in 0..problems.length {
         problems[i].debug_count(shapes);
+        //problems[i].second_debug();
     }
+
+    //print(problems.length);
 
     // for i in 0..shapes.length {
     //     shapes[i].debug();

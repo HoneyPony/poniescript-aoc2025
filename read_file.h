@@ -33,3 +33,10 @@ ps_int
 roundit(PONI_ABI(ps_float x)) {
     return (ps_int)round(x);
 }
+
+static inline
+PS_FUN()
+ps_float
+sqrtit(PONI_ABI(ps_float x)) {
+    return sqrt(x);
+}
